@@ -6,6 +6,9 @@
 
 (def *side* +red+)
 
+(defn avg
+  [& vals] (/ (apply + vals) (count vals)))
+
 (defmacro reverse-vector
   [v] `(apply vector (reverse ~v)))
 
@@ -59,9 +62,11 @@
 (defn playable?
   [x y] (= (rem (+ x y) 2) 0))
 
-(defn crowned?
-  [nx ny p]
-  (or (and (= p 1) (= ny 7)) (and (= p -1) (= ny 0))))
+(defn promoted?
+  [nx ny p] (or (and (= p 1) (= ny 7)) (and (= p -1) (= ny 0))))
+
+(defn promote
+  [nx ny p] (if (promoted? nx ny p) (* 2 p) p))
 
 (defn squares
   []
@@ -90,12 +95,18 @@
   (let [mx (+ x dx) my (+ y dy) cp (get-p mx my)]
     (let [nx (+ mx dx) ny (+ my dy) lp (get-p nx ny)]
       (if (and (< -1 nx +size+) (< -1 ny +size+) (opp? cp) (open? lp))
-        (let [np (if (crowned? nx ny p) (* 2 p) p)
-              board (set-p* [x y 0] [mx my 0] [nx ny np])]
+        (let [board (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])]
           [mx my nx ny cp board])))))
 
 ;(try-jump 0 0 1 [1 1])
 ;(try-jump 2 2 1 [1 1])
+
+(defn- do-jump
+  [[x y] [nx ny cp]]
+  (let [mx (avg x nx) my (avg y ny) p (get-p x y)]
+    (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])))
+
+;(do-jump [2 2] [4 4 -1])
 
 (defn- collect-jumps
   [x y p]
@@ -104,8 +115,7 @@
       (reverse acc)
       (let [[mx my nx ny cp board] (try-jump x y p (first dirs))]
         (if board
-          (let [this [nx ny cp]
-                next (binding [*board* board] (collect-jumps nx ny p))]
+          (let [this [nx ny cp] next (binding [*board* board] (collect-jumps nx ny p))]
             (recur (rest dirs) (cons (cons this next) acc)))
           (recur (rest dirs) acc))))))
 
@@ -124,9 +134,15 @@
   [x y p [dx dy]]
   (let [nx (+ x dx) ny (+ y dy) lp (get-p nx ny)]
     (if (and (< -1 nx +size+) (< -1 ny +size+) (open? lp))
-      (let [np (if (crowned? nx ny p) (* 2 p) p)
-            board (set-p* [x y 0] [nx ny np])]
+      (let [board (set-p* [x y 0] [nx ny (promote nx ny p)])]
         [nx ny board]))))
+
+(defn- do-move
+  [[x y] [nx ny]]
+  (let [p (get-p x y)]
+    (set-p* [x y 0] [nx ny (promote nx ny p)])))
+
+;(do-move [4 0] [5 1])
 
 (defn- collect-moves
   [x y p]
@@ -134,9 +150,7 @@
     (if (empty? dirs)
       (reverse acc)
       (let [[nx ny board] (try-move x y p (first dirs))]
-        (if board
-          (recur (rest dirs) (cons (list [nx ny]) acc))
-          (recur (rest dirs) acc))))))
+        (recur (rest dirs) (if board (cons (list [nx ny]) acc) acc))))))
 
 ;(collect-moves 4 0 1)
 
