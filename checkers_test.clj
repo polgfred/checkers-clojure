@@ -25,11 +25,11 @@
       (apply str
         (concat
           (for [y (reverse (range 8))]
-            (let [s (cons y (map (partial get char-map) (get board y)))]
-              (apply (partial format "%d %s %s %s %s %s %s %s %s\n") s)))
+            (let [s (map (partial get char-map) (get board y))]
+              (apply (partial format "%d %s %s %s %s %s %s %s %s\n" y) s)))
           '("  0 1 2 3 4 5 6 7\n"))))))
 
-;(println (dump-board))
+(println (dump-board))
 
 (defmacro with-board
   [v & exprs] `(binding [*board* (reverse-vector ~v)] ~@exprs))
