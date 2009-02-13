@@ -6,25 +6,47 @@
 
 (def *side* +red+)
 
-(defn avg
-  [& vals] (/ (apply + vals) (count vals)))
+(defn abs
+  [n] (if (neg? n) (- n) n))
 
-(defmacro reverse-vector
-  [v] `(apply vector (reverse ~v)))
+(defn avg
+  [& values] (/ (apply + values) (count values)))
+
+(defn compact
+  [coll]
+  (filter #(not (nil? %)) coll))
+
+(defn- reverse-vector
+  {:inline (fn [v] `(apply vector (reverse ~v)))}
+  [v] (apply vector (reverse v)))
 
 (def *board*
   (reverse-vector [
-    [ 0 -1  0 -1  0 -1  0 -1 ]
-    [ 0  0 -1  0  0  0 -1  0 ]
-    [ 0 -1  0 -1  0 -1  0 -1 ]
-    [ 0  0  0  0  0  0  0  0 ]
-    [ 0 -1  0 -1  0 -1  0  0 ]
-    [ 1  0  1  0  1  0  1  0 ]
-    [ 0  1  0  0  0  0  0  1 ]
-    [ 1  0  1  0  1  0  1  0 ]
+    [ 0 -1  0 -1  0 -1  0 -1 ] ; 7
+    [ 0  0 -1  0  0  0 -1  0 ] ; 6
+    [ 0 -1  0 -1  0 -1  0 -1 ] ; 5
+    [ 0  0  0  0  0  0  0  0 ] ; 4
+    [ 0 -1  0 -1  0 -1  0  0 ] ; 3
+    [ 1  0  1  0  1  0  1  0 ] ; 2
+    [ 0  1  0  0  0  0  0  1 ] ; 1
+    [ 1  0  1  0  1  0  1  0 ] ; 0
+    ; 0  1  2  3  4  5  6  7
   ]))
 
-;(print *board*)
+;; (print *board*)
+
+(let [char-map {0 \. 1 \r 2 \R -1 \w -2 \W}]
+  (defn- dump-board
+    ([] (dump-board *board*))
+    ([board]
+      (apply str
+        (concat
+          (for [y (reverse (range 8))]
+            (let [s (map (partial get char-map) (get board y))]
+              (apply (partial format "%d %s %s %s %s %s %s %s %s\n" y) s)))
+          '("  0 1 2 3 4 5 6 7\n"))))))
+
+;; (println (dump-board))
 
 (defn get-p
   ([x y] (get-p x y *board*))
@@ -34,15 +56,15 @@
   ([x y p] (set-p x y p *board*))
   ([x y p board] (assoc board y (assoc (get board y) x p))))
 
-;(println (dump-board (set-p 0 0 2)))
-;(println (dump-board (set-p 0 0 2 (set-p 2 0 -2))))
+;; (println (dump-board (set-p 0 0 2)))
+;; (println (dump-board (set-p 0 0 2 (set-p 2 0 -2))))
 
 (defmacro set-p*
-  [this & next]
-  (if next `(set-p ~@this (set-p* ~@next)) `(set-p ~@this)))
+  [this & more]
+  (if more `(set-p ~@this (set-p* ~@more)) `(set-p ~@this)))
 
-;(println (dump-board))
-;(println (dump-board (set-p* [2 2 0] [3 3 0] [4 4 1])))
+;; (println (dump-board))
+;; (println (dump-board (set-p* [2 2 0] [3 3 0] [4 4 1])))
 
 (defn my-piece?
   [p] (= p *side*))
@@ -73,13 +95,13 @@
   (for [x (range 8) y (range 8) :when (playable? x y)]
     [x y (get-p x y)]))
 
-;(squares)
+;; (squares)
 
 (defn my-squares
   []
   (for [[x y p] (squares) :when (mine? p)] [x y p]))
 
-;(my-squares)
+;; (my-squares)
 
 (defn directions
   [p]
@@ -87,26 +109,22 @@
     (for [dy (if (my-king? p) ahead-back ahead) dx ahead-back]
       [dx dy])))
 
-;(dirs 1)
-;(dirs 2)
+;; (dirs 1)
+;; (dirs 2)
 
 (defn- try-jump
   [x y p [dx dy]]
-  (let [mx (+ x dx) my (+ y dy) cp (get-p mx my)]
-    (let [nx (+ mx dx) ny (+ my dy) lp (get-p nx ny)]
-      (if (and (< -1 nx +size+) (< -1 ny +size+) (opp? cp) (open? lp))
-        (let [board (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])]
-          [mx my nx ny cp board])))))
+  (let [mx (+  x dx) my (+  y dy) cp (get-p mx my)
+        nx (+ mx dx) ny (+ my dy) lp (get-p nx ny)]
+    (if (and (< -1 nx +size+)
+             (< -1 ny +size+)
+             (opp?  cp)
+             (open? lp))
+      (let [board (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])]
+        [mx my nx ny cp board]))))
 
-;(try-jump 0 0 1 [1 1])
-;(try-jump 2 2 1 [1 1])
-
-(defn- do-jump
-  [[x y] [nx ny cp]]
-  (let [mx (avg x nx) my (avg y ny) p (get-p x y)]
-    (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])))
-
-;(do-jump [2 2] [4 4 -1])
+;; (try-jump 0 0 1 [1 1])
+;; (try-jump 2 2 1 [1 1])
 
 (defn- collect-jumps
   [x y p]
@@ -115,34 +133,36 @@
       (reverse acc)
       (let [[mx my nx ny cp board] (try-jump x y p (first dirs))]
         (if board
-          (let [this [nx ny cp] next (binding [*board* board] (collect-jumps nx ny p))]
-            (recur (rest dirs) (cons (cons this next) acc)))
+          (let [this [nx ny cp]
+                more (binding [*board* board] (collect-jumps nx ny p))]
+            (recur (rest dirs) (cons (cons this more) acc)))
           (recur (rest dirs) acc))))))
 
-;(collect-jumps 2 2 1)
+;; (collect-jumps 2 2 1)
 
 (defn jumps-from
   [x y]
-  (let [next (collect-jumps x y (get-p x y))]
-    (if next (cons [x y] next))))
+  (let [more (collect-jumps x y (get-p x y))]
+    (if more (cons [x y] more))))
 
-;(jumps-from 2 2)
-;(jumps-from 4 2)
-;(jumps-from 0 6)
+;; (jumps-from 2 2)
+;; (jumps-from 4 2)
+;; (jumps-from 0 6)
+
+(defn my-jumps
+  []
+  (compact (for [[x y] (my-squares)] (jumps-from x y))))
+
+;; (my-jumps)
 
 (defn- try-move
   [x y p [dx dy]]
   (let [nx (+ x dx) ny (+ y dy) lp (get-p nx ny)]
-    (if (and (< -1 nx +size+) (< -1 ny +size+) (open? lp))
+    (if (and (< -1 nx +size+)
+             (< -1 ny +size+)
+             (open? lp))
       (let [board (set-p* [x y 0] [nx ny (promote nx ny p)])]
         [nx ny board]))))
-
-(defn- do-move
-  [[x y] [nx ny]]
-  (let [p (get-p x y)]
-    (set-p* [x y 0] [nx ny (promote nx ny p)])))
-
-;(do-move [4 0] [5 1])
 
 (defn- collect-moves
   [x y p]
@@ -152,11 +172,17 @@
       (let [[nx ny board] (try-move x y p (first dirs))]
         (recur (rest dirs) (if board (cons (list [nx ny]) acc) acc))))))
 
-;(collect-moves 4 0 1)
+;; (collect-moves 4 0 1)
 
 (defn moves-from
   [x y]
   (let [next (collect-moves x y (get-p x y))]
     (if next (cons [x y] next))))
 
-;(moves-from 4 0)
+;; (moves-from 4 0)
+
+(defn my-moves
+  []
+  (compact (for [[x y] (my-squares)] (moves-from x y))))
+
+;; (my-moves)

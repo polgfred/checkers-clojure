@@ -9,7 +9,7 @@
   [v coll] (some (partial = v) coll))
 
 (defn- not-in?
-  [v coll] (complement in?))
+  [v coll] (not (in? v coll)))
 
 (defn- unwind
   [tree]
@@ -17,19 +17,6 @@
     (if next
       (apply concat (for [n next] (map #(cons this %) (unwind n))))
       (list tree))))
-
-(let [char-map {0 \. 1 \b 2 \B -1 \w -2 \W}]
-  (defn- dump-board
-    ([] (dump-board *board*))
-    ([board]
-      (apply str
-        (concat
-          (for [y (reverse (range 8))]
-            (let [s (map (partial get char-map) (get board y))]
-              (apply (partial format "%d %s %s %s %s %s %s %s %s\n" y) s)))
-          '("  0 1 2 3 4 5 6 7\n"))))))
-
-(println (dump-board))
 
 (defmacro with-board
   [v & exprs] `(binding [*board* (reverse-vector ~v)] ~@exprs))
