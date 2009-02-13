@@ -15,7 +15,7 @@
   [tree]
   (let [[this & next] tree]
     (if next
-      (apply concat (for [n next] (map #(cons this %) (unwind n))))
+      (reduce concat (for [n next] (map #(cons this %) (unwind n))))
       (list tree))))
 
 (defmacro with-board
@@ -47,13 +47,13 @@
            (in? [1 1 -1] (squares))
            (not-in? [0 1 0] (squares)))
 
-  (binding [*side* +red+]
+  (binding [*side* +black+]
     (assert* (not-in? [0 0 0] (my-squares))
              (in? [2 0 1] (my-squares))
              (not-in? [1 1 -1] (my-squares))
              (not-in? [0 1 0] (my-squares))))
 
-  (binding [*side* +white+]
+  (binding [*side* +red+]
     (assert* (not-in? [0 0 0] (my-squares))
              (not-in? [2 0 1] (my-squares))
              (in? [1 1 -1] (my-squares))
@@ -61,11 +61,11 @@
 
   ;;; direction enumerations
 
-  (binding [*side* +red+]
+  (binding [*side* +black+]
     (assert* (= (directions 1) '([1 1] [-1 1]))
              (= (directions 2) '([1 1] [-1 1] [1 -1] [-1 -1]))))
 
-  (binding [*side* +white+]
+  (binding [*side* +red+]
     (assert* (= (directions -1) '([-1 -1] [1 -1]))
              (= (directions -2) '([-1 -1] [1 -1] [-1 1] [1 1])))))
 
@@ -158,7 +158,7 @@
              [ 0  0  0  0  0  0  0  0 ]
              [ 0  0  0  0  0  0  0  0 ]]
 
-  (binding [*side* +red+]
+  (binding [*side* +black+]
     (let [moves (unwind (moves-from 2 4))]
       (assert* (in? '([2 4] [3 5]) moves)
                (in? '([2 4] [1 5]) moves)
@@ -176,7 +176,7 @@
                (in? '([4 2] [5 1]) moves)
                (in? '([4 2] [3 1]) moves))))
 
-  (binding [*side* +white+]
+  (binding [*side* +red+]
     (let [moves (unwind (moves-from 4 6))]
       (assert* (in? '([4 6] [3 5]) moves)
                (in? '([4 6] [5 5]) moves)

@@ -2,6 +2,9 @@
 
 (ns checkers)
 
+(defn- indent
+  [x] (apply str (map (fn [i] "  ") (range x))))
+
 (defn- do-jump
   [[x y] [nx ny cp]]
   (let [mx (avg x nx) my (avg y ny) p (get-p x y)]
@@ -14,12 +17,14 @@
 
 (defn- do-play
   [from to]
-  (if (let [[nx ny cp] to] cp) (do-jump from to) (do-move from to)))
+  (let [[nx ny cp] to]
+    (if cp (do-jump from to) (do-move from to))))
 
 (defn my-plays
   [] (or (my-jumps) (my-moves)))
 
-(def *depth* 5)
+(def +max-depth+ 3)
+(def *depth* +max-depth+)
 
 (defmacro switch-sides
   [& exprs]
@@ -28,7 +33,7 @@
 (defn run-plays  ; circular dependency
   [])
 
-(let [piece-vals-red
+(let [piece-vals-black
         (reverse-vector
           [[   0   0   0   0   0   0   0   0 ]
            [ 130   0 142   0 142   0 130   0 ]
@@ -38,11 +43,11 @@
            [ 102   0 105   0 105   0 102   0 ]
            [   0 100   0 102   0 102   0 100 ]
            [ 100   0 104   0 104   0 100   0 ]])
-      piece-vals-white
+      piece-vals-red
         (reverse-vector
-          (for [r piece-vals-red]
+          (for [r piece-vals-black]
             (reverse-vector (map - r))))
-      king-vals-red (reverse-vector
+      king-vals-black (reverse-vector
           [[   0 164   0 152   0 152   0 152 ]
            [ 164   0 164   0 164   0 164   0 ]
            [   0 164   0 180   0 180   0 152 ]
@@ -51,25 +56,29 @@
            [ 152   0 180   0 180   0 164   0 ]
            [   0 164   0 164   0 164   0 164 ]
            [ 152   0 152   0 152   0 164   0 ]])
-      king-vals-white
+      king-vals-red
         (reverse-vector
-          (for [r king-vals-red]
+          (for [r king-vals-black]
             (reverse-vector (map - r))))]
   (defn- calculate-score
     []
-    (if (or (pos? *depth*) (switch-sides (seq (my-jumps))))
-      (switch-sides (first (run-plays)))
-      (apply +
-        (for [[x y p] (squares)]
-          (cond (= p  1) (get-p x y piece-vals-red)
-                (= p -1) (get-p x y piece-vals-white)
-                (= p  2) (get-p x y king-vals-red)
-                (= p -2) (get-p x y king-vals-white)
-                (= p  0) 0))))))
+    (reduce +
+      (for [[x y p] (squares)]
+        (cond (= p  1) (get-p x y piece-vals-black)
+              (= p -1) (get-p x y piece-vals-red)
+              (= p  2) (get-p x y king-vals-black)
+              (= p -2) (get-p x y king-vals-red)
+              (= p  0) 0)))))
+
+(defn- calculate-score-recursive
+  []
+  (if (or (pos? *depth*) (switch-sides (seq? (my-jumps))))
+    (switch-sides (first (run-plays)))
+    (calculate-score)))
 
 (defn- best-play
   [plays]
-  (let [cmp (if (= *side* +red+) > <)]
+  (let [cmp (if (= *side* +black+) > <)]
     (reduce
       (fn [play1 play2]
         (let [score1 (first play1) score2 (first play2)]
@@ -84,8 +93,10 @@
         (let [to (first subtree)]
           (binding [*board* (do-play from to)]
             (run-plays-from (cons to play) subtree)))))
-    (let [play (reverse play)]
-      [(calculate-score) play])))
+    (let [play (reverse play) score (calculate-score-recursive)]
+      ; (let [d (- +max-depth+ *depth*)]
+      ;   (println (indent d) d score play))
+      [score play])))
 
 (defn run-plays
   []
@@ -96,13 +107,4 @@
 
 ;; (run-plays-from (list [4 2]) (jumps-from 4 2))
 
-(run-plays)
-
-;; (defn best-play
-;;   []
-;;   (loop [squares (my-squares) best nil score nil]
-;;     (if (empty? squares)
-;;       (reverse acc)
-;;       (let [[x y p] (first squares)]
-;;         (for [[board score] (run-plays-from x y)]
-;;           (run-play))
+(println (run-plays))

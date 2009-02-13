@@ -1,16 +1,16 @@
 (ns checkers (:import (clojure.core)))
 
 (def +size+ 8)
-(def +red+ 1)
-(def +white+ -1)
+(def +black+ 1)
+(def +red+ -1)
 
-(def *side* +red+)
+(def *side* +black+)
 
 (defn abs
   [n] (if (neg? n) (- n) n))
 
 (defn avg
-  [& values] (/ (apply + values) (count values)))
+  [& values] (/ (reduce + values) (count values)))
 
 (defn compact
   [coll]
@@ -35,11 +35,11 @@
 
 ;; (print *board*)
 
-(let [char-map {0 \. 1 \r 2 \R -1 \w -2 \W}]
+(let [char-map {0 \. 1 \b 2 \B -1 \r -2 \R}]
   (defn- dump-board
     ([] (dump-board *board*))
     ([board]
-      (apply str
+      (reduce str
         (concat
           (for [y (reverse (range 8))]
             (let [s (map (partial get char-map) (get board y))]
