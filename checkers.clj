@@ -5,6 +5,7 @@
 (def +red+ -1)
 
 (def *side* +black+)
+(def *board*)
 
 (defn abs
   [n] (if (neg? n) (- n) n))
@@ -17,23 +18,10 @@
   (filter #(not (nil? %)) coll))
 
 (defn- reverse-vector
-  {:inline (fn [v] `(apply vector (reverse ~v)))}
   [v] (apply vector (reverse v)))
 
-(def *board*
-  (reverse-vector [
-    [ 0 -1  0 -1  0 -1  0 -1 ] ; 7
-    [ 0  0 -1  0  0  0 -1  0 ] ; 6
-    [ 0 -1  0 -1  0 -1  0 -1 ] ; 5
-    [ 0  0  0  0  0  0  0  0 ] ; 4
-    [ 0 -1  0 -1  0 -1  0  0 ] ; 3
-    [ 1  0  1  0  1  0  1  0 ] ; 2
-    [ 0  1  0  0  0  0  0  1 ] ; 1
-    [ 1  0  1  0  1  0  1  0 ] ; 0
-    ; 0  1  2  3  4  5  6  7
-  ]))
-
-;; (print *board*)
+(defmacro with-board
+  [v & exprs] `(binding [*board* (reverse-vector ~v)] ~@exprs))
 
 (let [char-map {0 \. 1 \b 2 \B -1 \r -2 \R}]
   (defn- dump-board

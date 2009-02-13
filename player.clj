@@ -10,10 +10,14 @@
   (let [mx (avg x nx) my (avg y ny) p (get-p x y)]
     (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])))
 
+;; (do-jump [0 2] [2 4 -1])
+
 (defn- do-move
   [[x y] [nx ny]]
   (let [p (get-p x y)]
     (set-p* [x y 0] [nx ny (promote nx ny p)])))
+
+;; (do-move [4 0] [3 1])
 
 (defn- do-play
   [from to]
@@ -70,11 +74,15 @@
               (= p -2) (get-p x y king-vals-red)
               (= p  0) 0)))))
 
+;; (calculate-score)
+
 (defn- calculate-score-recursive
   []
   (if (or (pos? *depth*) (switch-sides (seq? (my-jumps))))
     (switch-sides (first (run-plays)))
     (calculate-score)))
+
+;; (calculate-score-recursive)
 
 (defn- best-play
   [plays]
@@ -98,6 +106,8 @@
       ;   (println (indent d) d score play))
       [score play])))
 
+;; (run-plays-from (list [4 2]) (jumps-from 4 2))
+
 (defn run-plays
   []
   (best-play
@@ -105,6 +115,24 @@
       (let [[x y] (first from)]
         (run-plays-from (list [x y]) from)))))
 
-;; (run-plays-from (list [4 2]) (jumps-from 4 2))
+(with-board [[  0 -1  0 -1  0 -1  0 -1 ]  ; 7
+             [ -1  0 -1  0 -1  0 -1  0 ]  ; 6
+             [  0 -1  0 -1  0 -1  0 -1 ]  ; 5
+             [  0  0  0  0  0  0  0  0 ]  ; 4
+             [  0  0  0  0  0  0  0  0 ]  ; 3
+             [  1  0  1  0  1  0  1  0 ]  ; 2
+             [  0  1  0  1  0  1  0  1 ]  ; 1
+             [  1  0  1  0  1  0  1  0 ]] ; 0
+             ;  0  1  2  3  4  5  6  7
+  (println (run-plays)))
 
-(println (run-plays))
+(with-board [[ 0 -1  0 -1  0 -1  0 -1 ]  ; 7
+             [ 0  0 -1  0  0  0 -1  0 ]  ; 6
+             [ 0 -1  0 -1  0 -1  0 -1 ]  ; 5
+             [ 0  0  0  0  0  0  0  0 ]  ; 4
+             [ 0 -1  0 -1  0 -1  0  0 ]  ; 3
+             [ 1  0  1  0  1  0  1  0 ]  ; 2
+             [ 0  1  0  0  0  0  0  1 ]  ; 1
+             [ 1  0  1  0  1  0  1  0 ]] ; 0
+             ; 0  1  2  3  4  5  6  7
+  (println (run-plays)))

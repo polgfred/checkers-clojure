@@ -18,9 +18,6 @@
       (reduce concat (for [n next] (map #(cons this %) (unwind n))))
       (list tree))))
 
-(defmacro with-board
-  [v & exprs] `(binding [*board* (reverse-vector ~v)] ~@exprs))
-
 (with-board [[ 0  0  0  0  0  0  0  0 ]
              [ 0  0  0  0  0  0  0  0 ]
              [ 0  0  0  0  0 -1  0  0 ]
