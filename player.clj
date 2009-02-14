@@ -5,27 +5,15 @@
 (defn- indent
   [x] (apply str (map (fn [i] "  ") (range x))))
 
-(defn- do-jump
-  [[x y] [nx ny cp]]
-  (let [mx (avg x nx) my (avg y ny) p (get-p x y)]
-    (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])))
-
-;; (do-jump [0 2] [2 4 -1])
-
-(defn- do-move
-  [[x y] [nx ny]]
-  (let [p (get-p x y)]
-    (set-p* [x y 0] [nx ny (promote nx ny p)])))
-
-;; (do-move [4 0] [3 1])
-
-(defn- do-play
-  [from to]
-  (let [[nx ny cp] to]
-    (if cp (do-jump from to) (do-move from to))))
-
 (defn my-plays
   [] (or (my-jumps) (my-moves)))
+
+(defn do-play
+  [x y nx ny]
+  (let [diff (- nx x)]
+    (if (or (= 2 diff) (= -2 diff))
+      (do-jump x y nx ny) 
+      (do-move x y nx ny))))
 
 (def +max-depth+ 3)
 (def *depth* +max-depth+)
@@ -64,19 +52,20 @@
         (reverse-vector
           (for [r king-vals-black]
             (reverse-vector (map - r))))]
-  (defn- calculate-score
+  (defn calculate-score
     []
     (reduce +
       (for [[x y p] (squares)]
-        (cond (= p  1) (get-p x y piece-vals-black)
-              (= p -1) (get-p x y piece-vals-red)
-              (= p  2) (get-p x y king-vals-black)
-              (= p -2) (get-p x y king-vals-red)
-              (= p  0) 0)))))
+        (do
+          (cond (= p  1) (get-p x y piece-vals-black)
+                (= p -1) (get-p x y piece-vals-red)
+                (= p  2) (get-p x y king-vals-black)
+                (= p -2) (get-p x y king-vals-red)
+                (= p  0) 0))))))
 
 ;; (calculate-score)
 
-(defn- calculate-score-recursive
+(defn calculate-score-recursive
   []
   (if (or (pos? *depth*) (switch-sides (seq? (my-jumps))))
     (switch-sides (first (run-plays)))
@@ -84,7 +73,7 @@
 
 ;; (calculate-score-recursive)
 
-(defn- best-play
+(defn best-play
   [plays]
   (let [cmp (if (= *side* +black+) > <)]
     (reduce
@@ -93,14 +82,14 @@
           (if (cmp score1 score2) play1 play2)))
       plays)))
 
-(defn- run-plays-from
-  [play [from & more]]
+(defn run-plays-from
+  [play [[x y] & more]]
   (if more
     (best-play
       (for [subtree more]
-        (let [to (first subtree)]
-          (binding [*board* (do-play from to)]
-            (run-plays-from (cons to play) subtree)))))
+        (let [[nx ny] (first subtree)]
+          (binding [*board* (do-play x y nx ny)]
+            (run-plays-from (cons [nx ny] play) subtree)))))
     (let [play (reverse play) score (calculate-score-recursive)]
       ; (let [d (- +max-depth+ *depth*)]
       ;   (println (indent d) d score play))

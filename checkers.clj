@@ -100,30 +100,38 @@
 ;; (dirs 1)
 ;; (dirs 2)
 
-(defn- try-jump
-  [x y p [dx dy]]
-  (let [mx (+  x dx) my (+  y dy) cp (get-p mx my)
-        nx (+ mx dx) ny (+ my dy) lp (get-p nx ny)]
-    (if (and (< -1 nx +size+)
-             (< -1 ny +size+)
-             (opp?  cp)
-             (open? lp))
-      (let [board (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])]
-        [mx my nx ny cp board]))))
+(defn do-jump
+  [x y nx ny]
+  (if (and (< -1  x +size+)
+           (< -1  y +size+)
+           (< -1 nx +size+)
+           (< -1 ny +size+)
+           (=  2 (abs (- nx x)))
+           (=  2 (abs (- ny y))))
+    (let [p (get-p x y) mx (avg x nx) my (avg y ny)]
+      (if (and (opp? (get-p mx my))
+               (open? (get-p nx ny)))
+        (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])))))
 
-;; (try-jump 0 0 1 [1 1])
-;; (try-jump 2 2 1 [1 1])
+;; (do-jump 0 2 2 4)
 
-(defn- collect-jumps
+(defn try-jump
+  [x y [dx dy]]
+  (let [nx (+ x dx dx) ny (+ y dy dy) board (do-jump x y nx ny)]
+    (if board [nx ny board])))
+
+;; (try-jump 0 0 [1 1])
+;; (try-jump 2 2 [1 1])
+
+(defn collect-jumps
   [x y p]
   (loop [dirs (directions p) acc nil]
     (if (empty? dirs)
       (reverse acc)
-      (let [[mx my nx ny cp board] (try-jump x y p (first dirs))]
+      (let [[nx ny board] (try-jump x y (first dirs))]
         (if board
-          (let [this [nx ny cp]
-                more (binding [*board* board] (collect-jumps nx ny p))]
-            (recur (rest dirs) (cons (cons this more) acc)))
+          (let [more (binding [*board* board] (collect-jumps nx ny p))]
+            (recur (rest dirs) (cons (cons [nx ny] more) acc)))
           (recur (rest dirs) acc))))))
 
 ;; (collect-jumps 2 2 1)
@@ -143,29 +151,41 @@
 
 ;; (my-jumps)
 
-(defn- try-move
-  [x y p [dx dy]]
-  (let [nx (+ x dx) ny (+ y dy) lp (get-p nx ny)]
-    (if (and (< -1 nx +size+)
-             (< -1 ny +size+)
-             (open? lp))
-      (let [board (set-p* [x y 0] [nx ny (promote nx ny p)])]
-        [nx ny board]))))
+(defn do-move
+  [x y nx ny]
+  (if (and (< -1  x +size+)
+           (< -1  y +size+)
+           (< -1 nx +size+)
+           (< -1 ny +size+)
+           (=  1 (abs (- nx x)))
+           (=  1 (abs (- ny y))))
+    (let [p (get-p x y)]
+      (if (open? (get-p nx ny))
+        (set-p* [x y 0] [nx ny (promote nx ny p)])))))
+
+;; (do-move 4 0 3 1)
+
+(defn try-move
+  [x y [dx dy]]
+  (let [nx (+ x dx) ny (+ y dy) board (do-move x y nx ny)]
+    (if board [nx ny board])))
+
+;; (try-move 4 0 [-1 1])
 
 (defn- collect-moves
   [x y p]
   (loop [dirs (directions p) acc nil]
     (if (empty? dirs)
       (reverse acc)
-      (let [[nx ny board] (try-move x y p (first dirs))]
+      (let [[nx ny board] (try-move x y (first dirs))]
         (recur (rest dirs) (if board (cons (list [nx ny]) acc) acc))))))
 
 ;; (collect-moves 4 0 1)
 
 (defn moves-from
   [x y]
-  (let [next (collect-moves x y (get-p x y))]
-    (if next (cons [x y] next))))
+  (let [more (collect-moves x y (get-p x y))]
+    (if more (cons [x y] more))))
 
 ;; (moves-from 4 0)
 

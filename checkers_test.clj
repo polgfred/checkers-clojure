@@ -13,9 +13,9 @@
 
 (defn- unwind
   [tree]
-  (let [[this & next] tree]
-    (if next
-      (reduce concat (for [n next] (map #(cons this %) (unwind n))))
+  (let [[this & more] tree]
+    (if more
+      (reduce concat (for [m more] (map #(cons this %) (unwind m))))
       (list tree))))
 
 (with-board [[ 0  0  0  0  0  0  0  0 ]
@@ -78,14 +78,14 @@
              [ 0  0  1  0  0  0  0  0 ]]
 
   (let [jumps (unwind (jumps-from 2 0))]
-    (assert* (in? '([2 0] [0 2 -1]) jumps)
-             (in? '([2 0] [4 2 -1] [2 4 -1]) jumps)
-             (in? '([2 0] [4 2 -1] [6 4 -1] [4 6 -1]) jumps)
-             (not-in? '([2 0] [4 2 -1]) jumps)
-             (not-in? '([2 0] [4 2 -1] [6 4 -1]) jumps)))
+    (assert* (in? '([2 0] [0 2]) jumps)
+             (in? '([2 0] [4 2] [2 4]) jumps)
+             (in? '([2 0] [4 2] [6 4] [4 6]) jumps)
+             (not-in? '([2 0] [4 2]) jumps)
+             (not-in? '([2 0] [4 2] [6 4]) jumps)))
 
-  (let [[mx my nx ny cp board] (try-jump 2 0 1 [-1 1])]
-    (assert* (= [mx my] [1 1]) (= [nx ny] [0 2]) (= cp -1))
+  (let [[nx ny board] (try-jump 2 0 [-1 1])]
+    (assert (= [nx ny] [0 2]))
     (binding [*board* board]
       (assert* (= 0 (get-p 2 0)) (= 0 (get-p 1 1)) (= 1 (get-p 0 2))))))
 
@@ -99,17 +99,17 @@
              [ 0  0  0  0  0  0  0  0 ]]
 
   (let [jumps (unwind (jumps-from 3 3))]
-    (assert* (in? '([3 3] [5 5 -1] [3 7 -1]) jumps)
-             (in? '([3 3] [1 5 -1] [3 7 -1]) jumps)
-             (not-in? '([3 3] [5 5 -1]) jumps)
-             (not-in? '([3 3] [1 5 -1]) jumps)
-             (not-in? '([3 3] [5 5 -1] [3 7 -1] [1 5 -1] [3 3 -1]) jumps)
-             (not-in? '([3 3] [1 5 -1] [3 7 -1] [5 5 -1] [3 3 -1]) jumps)))
+    (assert* (in? '([3 3] [5 5] [3 7]) jumps)
+             (in? '([3 3] [1 5] [3 7]) jumps)
+             (not-in? '([3 3] [5 5]) jumps)
+             (not-in? '([3 3] [1 5]) jumps)
+             (not-in? '([3 3] [5 5] [3 7] [1 5] [3 3]) jumps)
+             (not-in? '([3 3] [1 5] [3 7] [5 5] [3 3]) jumps)))
 
-  (let [[mx my nx ny cp board] (try-jump 3 3 1 [1 1])]
+  (let [[nx ny board] (try-jump 3 3 [1 1])]
     (binding [*board* board]
       (assert* (= 0 (get-p 3 3)) (= 0 (get-p 4 4)) (= 1 (get-p 5 5)))
-      (let [[mx my nx ny cp board] (try-jump 5 5 1 [-1 1])]
+      (let [[nx ny board] (try-jump 5 5 [-1 1])]
         (binding [*board* board]
           (assert* (= 0 (get-p 5 5)) (= 0 (get-p 4 6)) (= 2 (get-p 3 7))))))))
 
@@ -123,24 +123,24 @@
              [ 0  0  0  0  0  0  0  0 ]]
 
   (let [jumps (unwind (jumps-from 3 3))]
-    (assert* (in? '([3 3] [5 5 -1] [3 7 -1] [1 5 -1] [3 3 -1]) jumps)
-             (in? '([3 3] [1 5 -1] [3 7 -1] [5 5 -1] [3 3 -1]) jumps)
-             (not-in? '([3 3] [5 5 -1] [3 7 -1] [1 5 -1] [3 3 -1] [5 5 -1]) jumps)
-             (not-in? '([3 3] [5 5 -1]) jumps)
-             (not-in? '([3 3] [1 5 -1]) jumps)
-             (not-in? '([3 3] [5 5 -1] [3 7 -1]) jumps)
-             (not-in? '([3 3] [1 5 -1] [3 7 -1]) jumps)))
+    (assert* (in? '([3 3] [5 5] [3 7] [1 5] [3 3]) jumps)
+             (in? '([3 3] [1 5] [3 7] [5 5] [3 3]) jumps)
+             (not-in? '([3 3] [5 5] [3 7] [1 5] [3 3] [5 5]) jumps)
+             (not-in? '([3 3] [5 5]) jumps)
+             (not-in? '([3 3] [1 5]) jumps)
+             (not-in? '([3 3] [5 5] [3 7]) jumps)
+             (not-in? '([3 3] [1 5] [3 7]) jumps)))
 
-  (let [[mx my nx ny cp board] (try-jump 3 3 2 [1 1])]
+  (let [[nx ny board] (try-jump 3 3 [1 1])]
     (binding [*board* board]
       (assert* (= 0 (get-p 3 3)) (= 0 (get-p 4 4)) (= 2 (get-p 5 5)))
-      (let [[mx my nx ny cp board] (try-jump 5 5 2 [-1 1])]
+      (let [[nx ny board] (try-jump 5 5 [-1 1])]
         (binding [*board* board]
           (assert* (= 0 (get-p 5 5)) (= 0 (get-p 4 6)) (= 2 (get-p 3 7)))
-          (let [[mx my nx ny cp board] (try-jump 3 7 2 [-1 -1])]
+          (let [[nx ny board] (try-jump 3 7 [-1 -1])]
             (binding [*board* board]
               (assert* (= 0 (get-p 3 7)) (= 0 (get-p 2 6)) (= 2 (get-p 1 5)))
-              (let [[mx my nx ny cp board] (try-jump 1 5 2 [1 -1])]
+              (let [[nx ny board] (try-jump 1 5 [1 -1])]
                 (binding [*board* board]
                   (assert* (= 0 (get-p 1 5)) (= 0 (get-p 2 4)) (= 2 (get-p 3 3))))))))))))
 
@@ -162,7 +162,7 @@
                (not-in? '([2 4] [3 3]) moves)
                (not-in? '([2 4] [1 3]) moves)))
 
-    (let [[nx ny board] (try-move 2 4 1 [1 1])]
+    (let [[nx ny board] (try-move 2 4 [1 1])]
       (assert (= [nx ny] [3 5]))
       (binding [*board* board]
         (assert* (= 0 (get-p 2 4)) (= 1 (get-p 3 5)))))
