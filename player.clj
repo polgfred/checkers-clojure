@@ -56,12 +56,11 @@
     []
     (reduce +
       (for [[x y p] (squares)]
-        (do
-          (cond (= p  1) (get-p x y piece-vals-black)
-                (= p -1) (get-p x y piece-vals-red)
-                (= p  2) (get-p x y king-vals-black)
-                (= p -2) (get-p x y king-vals-red)
-                (= p  0) 0))))))
+        (cond (= p  1) (get-p x y piece-vals-black)
+              (= p -1) (get-p x y piece-vals-red)
+              (= p  2) (get-p x y king-vals-black)
+              (= p -2) (get-p x y king-vals-red)
+              (= p  0) 0)))))
 
 ;; (calculate-score)
 
