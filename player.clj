@@ -2,18 +2,20 @@
 
 (ns checkers)
 
-(defn- indent
-  [x] (apply str (map (fn [i] "  ") (range x))))
-
 (defn my-plays
   [] (or (my-jumps) (my-moves)))
 
+;; (my-plays)
+
 (defn do-play
-  [x y nx ny]
-  (let [diff (- nx x)]
+  [from to]
+  (let [diff (- (first to) (first from))]
     (if (or (= 2 diff) (= -2 diff))
-      (do-jump x y nx ny) 
-      (do-move x y nx ny))))
+      (do-jump from to) 
+      (do-move from to))))
+
+;; (do-play [0 2] [2 4])
+;; (do-play [6 2] [5 3])
 
 (def +max-depth+ 3)
 (def *depth* +max-depth+)
@@ -22,7 +24,7 @@
   [& exprs]
   `(binding [*side* (- *side*) *depth* (dec *depth*)] ~@exprs))
 
-(defn run-plays  ; circular dependency
+(defn best-play  ; circular dependency
   [])
 
 (let [piece-vals-black
@@ -67,41 +69,41 @@
 (defn calculate-score-recursive
   []
   (if (or (pos? *depth*) (switch-sides (seq? (my-jumps))))
-    (switch-sides (first (run-plays)))
+    (switch-sides (first (best-play)))
     (calculate-score)))
 
 ;; (calculate-score-recursive)
 
-(defn best-play
-  [plays]
-  (let [cmp (if (= *side* +black+) > <)]
-    (reduce
-      (fn [play1 play2]
-        (let [score1 (first play1) score2 (first play2)]
-          (if (cmp score1 score2) play1 play2)))
-      plays)))
+(defn compare-plays
+  [p1 p2]
+  (let [score1 (first p1) score2 (first p2) cmp (if (= *side* +black+) > <)]
+    (if (cmp score1 score2) p1 p2)))
 
-(defn run-plays-from
-  [play [[x y] & more]]
-  (if more
-    (best-play
-      (for [subtree more]
-        (let [[nx ny] (first subtree)]
-          (binding [*board* (do-play x y nx ny)]
-            (run-plays-from (cons [nx ny] play) subtree)))))
+(defn best-play-from
+  [play [from & more]]
+  (if (empty? more)
     (let [play (reverse play) score (calculate-score-recursive)]
-      ; (let [d (- +max-depth+ *depth*)]
-      ;   (println (indent d) d score play))
-      [score play])))
+      ;; (let [d (- +max-depth+ *depth*)]
+      ;;   (println (indent d) d score play))
+      [score play])
+    (reduce compare-plays
+      (for [tree more]
+        (let [to (first tree)]
+          (binding [*board* (do-play from to)]
+            (best-play-from (cons to play) tree)))))))
 
-;; (run-plays-from (list [4 2]) (jumps-from 4 2))
+;; (with-board [...] (best-play-from (list [4 2]) (jumps-from 4 2)))
 
-(defn run-plays
+(defn best-play
   []
-  (best-play
-    (for [from (my-plays)]
-      (let [[x y] (first from)]
-        (run-plays-from (list [x y]) from)))))
+  (reduce compare-plays
+    (for [tree (my-plays)]
+      (let [from (first tree)]
+        (best-play-from (list from) tree)))))
+
+;; (with-board [...] (best-play))
+
+;; ---------------------------------------------------------
 
 (with-board [[  0 -1  0 -1  0 -1  0 -1 ]  ; 7
              [ -1  0 -1  0 -1  0 -1  0 ]  ; 6
@@ -112,15 +114,15 @@
              [  0  1  0  1  0  1  0  1 ]  ; 1
              [  1  0  1  0  1  0  1  0 ]] ; 0
              ;  0  1  2  3  4  5  6  7
-  (println (run-plays)))
+  (println (best-play)))
 
-(with-board [[ 0 -1  0 -1  0 -1  0 -1 ]  ; 7
-             [ 0  0 -1  0  0  0 -1  0 ]  ; 6
-             [ 0 -1  0 -1  0 -1  0 -1 ]  ; 5
-             [ 0  0  0  0  0  0  0  0 ]  ; 4
-             [ 0 -1  0 -1  0 -1  0  0 ]  ; 3
-             [ 1  0  1  0  1  0  1  0 ]  ; 2
-             [ 0  1  0  0  0  0  0  1 ]  ; 1
-             [ 1  0  1  0  1  0  1  0 ]] ; 0
-             ; 0  1  2  3  4  5  6  7
-  (println (run-plays)))
+(with-board [[  0 -1  0 -1  0 -1  0 -1 ]  ; 7
+             [  0  0 -1  0  0  0 -1  0 ]  ; 6
+             [  0 -1  0 -1  0 -1  0 -1 ]  ; 5
+             [  0  0  0  0  0  0  0  0 ]  ; 4
+             [  0 -1  0 -1  0 -1  0  0 ]  ; 3
+             [  1  0  1  0  1  0  1  0 ]  ; 2
+             [  0  1  0  0  0  0  0  1 ]  ; 1
+             [  1  0  1  0  1  0  1  0 ]] ; 0
+             ;  0  1  2  3  4  5  6  7
+ (println (best-play)))

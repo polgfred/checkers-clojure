@@ -101,7 +101,7 @@
 ;; (dirs 2)
 
 (defn do-jump
-  [x y nx ny]
+  [[x y] [nx ny]]
   (if (and (< -1  x +size+)
            (< -1  y +size+)
            (< -1 nx +size+)
@@ -117,7 +117,7 @@
 
 (defn try-jump
   [x y [dx dy]]
-  (let [nx (+ x dx dx) ny (+ y dy dy) board (do-jump x y nx ny)]
+  (let [nx (+ x dx dx) ny (+ y dy dy) board (do-jump [x y] [nx ny])]
     (if board [nx ny board])))
 
 ;; (try-jump 0 0 [1 1])
@@ -152,7 +152,7 @@
 ;; (my-jumps)
 
 (defn do-move
-  [x y nx ny]
+  [[x y] [nx ny]]
   (if (and (< -1  x +size+)
            (< -1  y +size+)
            (< -1 nx +size+)
@@ -167,7 +167,7 @@
 
 (defn try-move
   [x y [dx dy]]
-  (let [nx (+ x dx) ny (+ y dy) board (do-move x y nx ny)]
+  (let [nx (+ x dx) ny (+ y dy) board (do-move [x y] [nx ny])]
     (if board [nx ny board])))
 
 ;; (try-move 4 0 [-1 1])
