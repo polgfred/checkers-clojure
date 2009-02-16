@@ -113,7 +113,7 @@
                (open? (get-p nx ny)))
         (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])))))
 
-;; (do-jump 0 2 2 4)
+;; (do-jump [0 2] [2 4])
 
 (defn try-jump
   [x y [dx dy]]
@@ -163,7 +163,7 @@
       (if (open? (get-p nx ny))
         (set-p* [x y 0] [nx ny (promote nx ny p)])))))
 
-;; (do-move 4 0 3 1)
+;; (do-move [4 0] [3 1])
 
 (defn try-move
   [x y [dx dy]]
