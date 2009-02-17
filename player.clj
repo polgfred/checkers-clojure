@@ -1,22 +1,8 @@
-(load-file "checkers.clj")
+(ns player)
 
-(ns checkers)
+(use 'checkers)
 
 (def *search-depth* 3) ;; root binding controls default search tree depth
-
-(defn my-plays
-  []
-  (or (my-jumps) (my-moves)))
-
-;; (my-plays)
-
-(defn do-play
-  [from to]
-  (let [diff (abs (- (first to) (first from)))]
-    (if (= 2 diff) (do-jump from to) (do-move from to))))
-
-;; (do-play [0 2] [2 4])
-;; (do-play [6 2] [5 3])
 
 (defmacro switch-sides
   [& exprs]

@@ -1,6 +1,6 @@
-(load-file "checkers.clj")
-
 (ns checkers)
+
+(use 'checkers)
 
 (defmacro assert*
   [& exprs]

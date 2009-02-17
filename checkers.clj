@@ -1,4 +1,4 @@
-(ns checkers (:import (clojure.core)))
+(ns checkers)
 
 (def +size+   8)
 (def +black+  1)
@@ -25,7 +25,7 @@
     ~@exprs))
 
 (let [char-map {0 \. 1 \b 2 \B -1 \r -2 \R}]
-  (defn- dump-board
+  (defn dump-board
     ([] (dump-board *board*))
     ([board]
       (reduce str
@@ -200,3 +200,17 @@
   (compact (for [[x y] (my-squares)] (moves-from x y))))
 
 ;; (my-moves)
+
+(defn do-play
+  [from to]
+  (let [diff (abs (- (first to) (first from)))]
+    (if (= 2 diff) (do-jump from to) (do-move from to))))
+
+;; (do-play [0 2] [2 4])
+;; (do-play [6 2] [5 3])
+
+(defn my-plays
+  []
+  (or (my-jumps) (my-moves)))
+
+;; (my-plays)
