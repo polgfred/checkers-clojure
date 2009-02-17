@@ -3,7 +3,8 @@
 (ns checkers)
 
 (defmacro assert*
-  [& exprs] `(do ~@(for [expr exprs] `(assert ~expr))))
+  [& exprs]
+  `(do ~@(for [expr exprs] `(assert ~expr))))
 
 (defn- in?
   [v coll] (some (partial = v) coll))
@@ -15,17 +16,19 @@
   [tree]
   (let [[this & more] tree]
     (if more
-      (reduce concat (for [m more] (map #(cons this %) (unwind m))))
+      (reduce concat
+        (for [m more]
+          (map #(cons this %) (unwind m))))
       (list tree))))
 
-(with-board [[ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0  0 -1  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0 -1  0 -1  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0 -1  0 -1  0  0  0  0 ]
-             [ 0  0  1  0  0  0  0  0 ]]
+(with-board +black+ [[ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0  0 -1  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0 -1  0 -1  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0 -1  0 -1  0  0  0  0 ]
+                     [ 0  0  1  0  0  0  0  0 ]]
 
   ;;; basic get/set tests
 
@@ -44,11 +47,10 @@
            (in? [1 1 -1] (squares))
            (not-in? [0 1 0] (squares)))
 
-  (binding [*side* +black+]
-    (assert* (not-in? [0 0 0] (my-squares))
-             (in? [2 0 1] (my-squares))
-             (not-in? [1 1 -1] (my-squares))
-             (not-in? [0 1 0] (my-squares))))
+  (assert* (not-in? [0 0 0] (my-squares))
+           (in? [2 0 1] (my-squares))
+           (not-in? [1 1 -1] (my-squares))
+           (not-in? [0 1 0] (my-squares)))
 
   (binding [*side* +red+]
     (assert* (not-in? [0 0 0] (my-squares))
@@ -58,9 +60,8 @@
 
   ;;; direction enumerations
 
-  (binding [*side* +black+]
-    (assert* (= (directions 1) '([1 1] [-1 1]))
-             (= (directions 2) '([1 1] [-1 1] [1 -1] [-1 -1]))))
+  (assert* (= (directions 1) '([1 1] [-1 1]))
+           (= (directions 2) '([1 1] [-1 1] [1 -1] [-1 -1])))
 
   (binding [*side* +red+]
     (assert* (= (directions -1) '([-1 -1] [1 -1]))
@@ -68,14 +69,14 @@
 
 ;;; jump logic
 
-(with-board [[ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0  0 -1  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0 -1  0 -1  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0 -1  0 -1  0  0  0  0 ]
-             [ 0  0  1  0  0  0  0  0 ]]
+(with-board +black+ [[ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0  0 -1  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0 -1  0 -1  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0 -1  0 -1  0  0  0  0 ]
+                     [ 0  0  1  0  0  0  0  0 ]]
 
   (let [jumps (unwind (jumps-from 2 0))]
     (assert* (in? '([2 0] [0 2]) jumps)
@@ -89,14 +90,14 @@
     (binding [*board* board]
       (assert* (= 0 (get-p 2 0)) (= 0 (get-p 1 1)) (= 1 (get-p 0 2))))))
 
-(with-board [[ 0  0  0  0  0  0  0  0 ]
-             [ 0  0 -1  0 -1  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0 -1  0 -1  0  0  0 ]
-             [ 0  0  0  1  0  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]]
+(with-board +black+ [[ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0 -1  0 -1  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0 -1  0 -1  0  0  0 ]
+                     [ 0  0  0  1  0  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]]
 
   (let [jumps (unwind (jumps-from 3 3))]
     (assert* (in? '([3 3] [5 5] [3 7]) jumps)
@@ -113,14 +114,14 @@
         (binding [*board* board]
           (assert* (= 0 (get-p 5 5)) (= 0 (get-p 4 6)) (= 2 (get-p 3 7))))))))
 
-(with-board [[ 0  0  0  0  0  0  0  0 ]
-             [ 0  0 -1  0 -1  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0 -1  0 -1  0  0  0 ]
-             [ 0  0  0  2  0  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]]
+(with-board +black+ [[ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0 -1  0 -1  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0 -1  0 -1  0  0  0 ]
+                     [ 0  0  0  2  0  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]]
 
   (let [jumps (unwind (jumps-from 3 3))]
     (assert* (in? '([3 3] [5 5] [3 7] [1 5] [3 3]) jumps)
@@ -146,21 +147,20 @@
 
 ;;; move logic
 
-(with-board [[ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0 -1  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  1  0  0  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0  2  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]
-             [ 0  0  0  0  0  0  0  0 ]]
+(with-board +black+ [[ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0 -1  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  1  0  0  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0  2  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]
+                     [ 0  0  0  0  0  0  0  0 ]]
 
-  (binding [*side* +black+]
-    (let [moves (unwind (moves-from 2 4))]
-      (assert* (in? '([2 4] [3 5]) moves)
-               (in? '([2 4] [1 5]) moves)
-               (not-in? '([2 4] [3 3]) moves)
-               (not-in? '([2 4] [1 3]) moves)))
+  (let [moves (unwind (moves-from 2 4))]
+    (assert* (in? '([2 4] [3 5]) moves)
+             (in? '([2 4] [1 5]) moves)
+             (not-in? '([2 4] [3 3]) moves)
+             (not-in? '([2 4] [1 3]) moves))
 
     (let [[nx ny board] (try-move 2 4 [1 1])]
       (assert (= [nx ny] [3 5]))

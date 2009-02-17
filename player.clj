@@ -2,29 +2,28 @@
 
 (ns checkers)
 
+(def *search-depth* 3) ;; root binding controls default search tree depth
+
 (defn my-plays
-  [] (or (my-jumps) (my-moves)))
+  []
+  (or (my-jumps) (my-moves)))
 
 ;; (my-plays)
 
 (defn do-play
   [from to]
-  (let [diff (- (first to) (first from))]
-    (if (or (= 2 diff) (= -2 diff))
-      (do-jump from to) 
-      (do-move from to))))
+  (let [diff (abs (- (first to) (first from)))]
+    (if (= 2 diff) (do-jump from to) (do-move from to))))
 
 ;; (do-play [0 2] [2 4])
 ;; (do-play [6 2] [5 3])
 
-(def +max-depth+ 3)
-(def *depth* +max-depth+)
-
 (defmacro switch-sides
   [& exprs]
-  `(binding [*side* (- *side*) *depth* (dec *depth*)] ~@exprs))
+  `(binding [*side* (- *side*) *search-depth* (dec *search-depth*)]
+    ~@exprs))
 
-(defn best-play  ; circular dependency
+(defn best-play ;; circular dependency
   [])
 
 (let [piece-vals-black
@@ -66,9 +65,16 @@
 
 ;; (calculate-score)
 
+(defn minimum-score
+  []
+  (if (= *side* +black+) -99999 +99999))
+
+;; (minimum-score)
+
 (defn calculate-score-recursive
   []
-  (if (or (pos? *depth*) (switch-sides (seq? (my-jumps))))
+  (if (or (pos? *search-depth*)
+          (switch-sides (seq? (my-jumps))))
     (switch-sides (first (best-play)))
     (calculate-score)))
 
@@ -76,15 +82,16 @@
 
 (defn compare-plays
   [p1 p2]
-  (let [score1 (first p1) score2 (first p2) cmp (if (= *side* +black+) > <)]
+  (let [cmp (if (= *side* +black+) > <)
+        score1 (first p1)
+        score2 (first p2)]
     (if (cmp score1 score2) p1 p2)))
 
 (defn best-play-from
   [play [from & more]]
   (if (empty? more)
     (let [play (reverse play) score (calculate-score-recursive)]
-      ;; (let [d (- +max-depth+ *depth*)]
-      ;;   (println (indent d) d score play))
+      ;; (println *search-depth* score play)
       [score play])
     (reduce compare-plays
       (for [tree more]
@@ -96,33 +103,36 @@
 
 (defn best-play
   []
-  (reduce compare-plays
-    (for [tree (my-plays)]
-      (let [from (first tree)]
-        (best-play-from (list from) tree)))))
+  (let [plays (my-plays)]
+    (if (empty? plays)
+      [(minimum-score)]
+      (reduce compare-plays
+        (for [tree plays]
+          (let [from (first tree)]
+            (best-play-from (list from) tree)))))))
 
 ;; (with-board [...] (best-play))
 
 ;; ---------------------------------------------------------
 
-(with-board [[  0 -1  0 -1  0 -1  0 -1 ]  ; 7
-             [ -1  0 -1  0 -1  0 -1  0 ]  ; 6
-             [  0 -1  0 -1  0 -1  0 -1 ]  ; 5
-             [  0  0  0  0  0  0  0  0 ]  ; 4
-             [  0  0  0  0  0  0  0  0 ]  ; 3
-             [  1  0  1  0  1  0  1  0 ]  ; 2
-             [  0  1  0  1  0  1  0  1 ]  ; 1
-             [  1  0  1  0  1  0  1  0 ]] ; 0
-             ;  0  1  2  3  4  5  6  7
+(with-board +black+ [[  0 -1  0 -1  0 -1  0 -1 ]  ; 7
+                     [ -1  0 -1  0 -1  0 -1  0 ]  ; 6
+                     [  0 -1  0 -1  0 -1  0 -1 ]  ; 5
+                     [  0  0  0  0  0  0  0  0 ]  ; 4
+                     [  0  0  0  0  0  0  0  0 ]  ; 3
+                     [  1  0  1  0  1  0  1  0 ]  ; 2
+                     [  0  1  0  1  0  1  0  1 ]  ; 1
+                     [  1  0  1  0  1  0  1  0 ]] ; 0
+                     ;  0  1  2  3  4  5  6  7
   (println (best-play)))
 
-(with-board [[  0 -1  0 -1  0 -1  0 -1 ]  ; 7
-             [  0  0 -1  0  0  0 -1  0 ]  ; 6
-             [  0 -1  0 -1  0 -1  0 -1 ]  ; 5
-             [  0  0  0  0  0  0  0  0 ]  ; 4
-             [  0 -1  0 -1  0 -1  0  0 ]  ; 3
-             [  1  0  1  0  1  0  1  0 ]  ; 2
-             [  0  1  0  0  0  0  0  1 ]  ; 1
-             [  1  0  1  0  1  0  1  0 ]] ; 0
-             ;  0  1  2  3  4  5  6  7
+(with-board +black+ [[  0 -1  0 -1  0 -1  0 -1 ]  ; 7
+                     [  0  0 -1  0  0  0 -1  0 ]  ; 6
+                     [  0 -1  0 -1  0 -1  0 -1 ]  ; 5
+                     [  0  0  0  0  0  0  0  0 ]  ; 4
+                     [  0 -1  0 -1  0 -1  0  0 ]  ; 3
+                     [  1  0  1  0  1  0  1  0 ]  ; 2
+                     [  0  1  0  0  0  0  0  1 ]  ; 1
+                     [  1  0  1  0  1  0  1  0 ]] ; 0
+                     ;  0  1  2  3  4  5  6  7
  (println (best-play)))

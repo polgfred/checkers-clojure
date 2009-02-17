@@ -1,11 +1,11 @@
 (ns checkers (:import (clojure.core)))
 
-(def +size+ 8)
-(def +black+ 1)
-(def +red+ -1)
+(def +size+   8)
+(def +black+  1)
+(def +red+   -1)
 
-(def *side* +black+)
-(def *board*)
+(def *board*)     ;; set root bindings to manage
+(def *side*)      ;; a single game globally
 
 (defn abs
   [n] (if (neg? n) (- n) n))
@@ -14,14 +14,15 @@
   [& values] (/ (reduce + values) (count values)))
 
 (defn compact
-  [coll]
-  (filter #(not (nil? %)) coll))
+  [coll] (filter #(not (nil? %)) coll))
 
-(defn- reverse-vector
+(defn reverse-vector
   [v] (apply vector (reverse v)))
 
 (defmacro with-board
-  [v & exprs] `(binding [*board* (reverse-vector ~v)] ~@exprs))
+  [side board & exprs]
+  `(binding [*side* ~side *board* (reverse-vector ~board)]
+    ~@exprs))
 
 (let [char-map {0 \. 1 \b 2 \B -1 \r -2 \R}]
   (defn- dump-board
@@ -49,7 +50,9 @@
 
 (defmacro set-p*
   [this & more]
-  (if more `(set-p ~@this (set-p* ~@more)) `(set-p ~@this)))
+  (if more
+    `(set-p ~@this (set-p* ~@more))
+    `(set-p ~@this)))
 
 ;; (println (dump-board))
 ;; (println (dump-board (set-p* [2 2 0] [3 3 0] [4 4 1])))
@@ -87,7 +90,8 @@
 
 (defn my-squares
   []
-  (for [[x y p] (squares) :when (mine? p)] [x y p]))
+  (for [[x y p] (squares) :when (mine? p)]
+    [x y p]))
 
 ;; (my-squares)
 
@@ -172,13 +176,15 @@
 
 ;; (try-move 4 0 [-1 1])
 
-(defn- collect-moves
+(defn collect-moves
   [x y p]
   (loop [dirs (directions p) acc nil]
     (if (empty? dirs)
       (reverse acc)
       (let [[nx ny board] (try-move x y (first dirs))]
-        (recur (rest dirs) (if board (cons (list [nx ny]) acc) acc))))))
+        (if board
+          (recur (rest dirs) (cons (list [nx ny]) acc))
+          (recur (rest dirs) acc))))))
 
 ;; (collect-moves 4 0 1)
 
