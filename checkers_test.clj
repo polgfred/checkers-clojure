@@ -1,5 +1,3 @@
-(ns checkers)
-
 (use 'checkers)
 
 (defmacro assert*

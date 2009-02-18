@@ -51,12 +51,6 @@
 
 ;; (calculate-score)
 
-(defn minimum-score
-  []
-  (if (= *side* +black+) -99999 +99999))
-
-;; (minimum-score)
-
 (defn calculate-score-recursive
   []
   (if (or (pos? *search-depth*)
@@ -67,11 +61,12 @@
 ;; (calculate-score-recursive)
 
 (defn compare-plays
-  [p1 p2]
-  (let [cmp (if (= *side* +black+) > <)
-        score1 (first p1)
-        score2 (first p2)]
-    (if (cmp score1 score2) p1 p2)))
+  ([] [(if (= *side* +black+) -99999 +99999)])
+  ([p1 p2]
+    (let [cmp (if (= *side* +black+) > <)
+          score1 (first p1)
+          score2 (first p2)]
+      (if (cmp score1 score2) p1 p2))))
 
 (defn best-play-from
   [play [from & more]]
@@ -90,11 +85,9 @@
 (defn best-play
   []
   (let [plays (my-plays)]
-    (if (empty? plays)
-      [(minimum-score)]
-      (reduce compare-plays
-        (for [tree plays]
-          (let [from (first tree)]
-            (best-play-from (list from) tree)))))))
+    (reduce compare-plays
+      (for [tree plays]
+        (let [from (first tree)]
+          (best-play-from (list from) tree))))))
 
 ;; (with-position [...] (best-play))
