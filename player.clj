@@ -13,32 +13,32 @@
   [])
 
 (let [piece-vals-black
-        (reverse-vector
-          [[   0   0   0   0   0   0   0   0 ]
-           [ 130   0 142   0 142   0 130   0 ]
-           [   0 120   0 130   0 130   0 120 ]
-           [ 110   0 120   0 120   0 110   0 ]
-           [   0 105   0 110   0 110   0 105 ]
-           [ 102   0 105   0 105   0 102   0 ]
-           [   0 100   0 102   0 102   0 100 ]
-           [ 100   0 104   0 104   0 100   0 ]])
+        [[ 100   0 104   0 104   0 100   0 ]
+         [   0 100   0 102   0 102   0 100 ]
+         [ 102   0 105   0 105   0 102   0 ]
+         [   0 105   0 110   0 110   0 105 ]
+         [ 110   0 120   0 120   0 110   0 ]
+         [   0 120   0 130   0 130   0 120 ]
+         [ 130   0 142   0 142   0 130   0 ]
+         [   0   0   0   0   0   0   0   0 ]]
       piece-vals-red
-        (reverse-vector
+        (vec (reverse
           (for [r piece-vals-black]
-            (reverse-vector (map - r))))
-      king-vals-black (reverse-vector
-          [[   0 164   0 152   0 152   0 152 ]
-           [ 164   0 164   0 164   0 164   0 ]
-           [   0 164   0 180   0 180   0 152 ]
-           [ 152   0 180   0 180   0 164   0 ]
-           [   0 164   0 180   0 180   0 152 ]
-           [ 152   0 180   0 180   0 164   0 ]
-           [   0 164   0 164   0 164   0 164 ]
-           [ 152   0 152   0 152   0 164   0 ]])
+            (vec (reverse (map - r))))))
+      king-vals-black
+        [[ 152   0 152   0 152   0 164   0 ]
+         [   0 164   0 164   0 164   0 164 ]
+         [ 152   0 180   0 180   0 164   0 ]
+         [   0 164   0 180   0 180   0 152 ]
+         [ 152   0 180   0 180   0 164   0 ]
+         [   0 164   0 180   0 180   0 152 ]
+         [ 164   0 164   0 164   0 164   0 ]
+         [   0 164   0 152   0 152   0 152 ]]
       king-vals-red
-        (reverse-vector
+        (vec (reverse
           (for [r king-vals-black]
-            (reverse-vector (map - r))))]
+            (vec (reverse (map - r))))))]
+
   (defn calculate-score
     []
     (reduce +
@@ -85,7 +85,7 @@
           (binding [*board* (do-play from to)]
             (best-play-from (cons to play) tree)))))))
 
-;; (with-board [...] (best-play-from (list [4 2]) (jumps-from 4 2)))
+;; (with-position [...] (best-play-from (list [4 2]) (jumps-from 4 2)))
 
 (defn best-play
   []
@@ -97,4 +97,4 @@
           (let [from (first tree)]
             (best-play-from (list from) tree)))))))
 
-;; (with-board [...] (best-play))
+;; (with-position [...] (best-play))

@@ -16,12 +16,12 @@
 (defn compact
   [coll] (filter #(not (nil? %)) coll))
 
-(defn reverse-vector
-  [v] (apply vector (reverse v)))
+(defn get-position
+  [] *board*)
 
-(defmacro with-board
+(defmacro with-position
   [side board & exprs]
-  `(binding [*side* ~side *board* (reverse-vector ~board)]
+  `(binding [*side* ~side *board* ~board]
     ~@exprs))
 
 (let [char-map {0 \. 1 \b 2 \B -1 \r -2 \R}]
