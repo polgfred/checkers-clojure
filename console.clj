@@ -40,8 +40,8 @@
 (loop []
   (with-position @side @board
     (let [your-move (human-move) b (do-plays your-move)]
-      (dosync (ref-set board b))
-      (with-position (- @side) @board
+      (dosync (ref-set board b) (alter side -))
+      (with-position @side @board
         (let [my-move (computer-move) b (do-plays my-move)]
-          (dosync (ref-set board b))
+          (dosync (ref-set board b) (alter side -))
           (recur))))))
