@@ -28,16 +28,16 @@
   [& exprs]
   `(binding [*side* (- *side*)] ~@exprs))
 
-(let [char-map {0 \. 1 \b 2 \B -1 \r -2 \R}]
+(let [chr-s {0 ". " 1 "b " 2 "B " -1 "r " -2 "R "}
+      num-s (partial format "%d ")]
   (defn dump-board
     ([] (dump-board *board*))
     ([board]
       (reduce str
         (concat
-          (for [y (reverse (range 8))]
-            (let [s (map char-map (get board y))]
-              (apply format "%d %s %s %s %s %s %s %s %s\n" (cons y s))))
-          (list "  0 1 2 3 4 5 6 7\n"))))))
+          (for [y (reverse (range +size+))]
+            (str (num-s y) (reduce str (map chr-s (get board y))) "\n"))
+          (list (str "  " (reduce str (map num-s (range +size+))) "\n")))))))
 
 ;; (println (dump-board))
 
