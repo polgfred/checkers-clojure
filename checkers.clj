@@ -1,12 +1,5 @@
 (ns checkers)
 
-(def +size+   8)
-(def +black+  1)
-(def +red+   -1)
-
-(def *board*)     ;; set root bindings to manage
-(def *side*)      ;; a single game globally
-
 (defn abs
   [n] (if (neg? n) (- n) n))
 
@@ -16,13 +9,24 @@
 (defn compact
   [coll] (filter #(not (nil? %)) coll))
 
-(defn get-position
-  [] *board*)
+(def +size+   8)
+(def +black+  1)
+(def +red+   -1)
+
+(def *board*)     ;; set root bindings to manage
+(def *side*)      ;; a single game globally
+
+(defmacro with-board
+  [board & exprs]
+  `(binding [*board* ~board] ~@exprs))
 
 (defmacro with-position
   [side board & exprs]
-  `(binding [*side* ~side *board* ~board]
-    ~@exprs))
+  `(binding [*side* ~side *board* ~board] ~@exprs))
+
+(defmacro switch-sides
+  [& exprs]
+  `(binding [*side* (- *side*)] ~@exprs))
 
 (let [char-map {0 \. 1 \b 2 \B -1 \r -2 \R}]
   (defn dump-board
@@ -56,6 +60,12 @@
 
 ;; (println (dump-board))
 ;; (println (dump-board (set-p* [2 2 0] [3 3 0] [4 4 1])))
+
+(defn black?
+  [] (= *side* +black+))
+
+(defn red?
+  [] (= *side* +red+))
 
 (defn my-piece?
   [p] (= p *side*))

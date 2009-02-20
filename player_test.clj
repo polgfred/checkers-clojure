@@ -6,7 +6,7 @@
   `(do ~@(for [expr exprs] `(assert ~expr))))
 
 (defn- in?
-  [v coll] (some (partial = v) coll))
+  [v coll] (contains? (set coll) v))
 
 (defn- not-in?
   [v coll] (not (in? v coll)))

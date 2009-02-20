@@ -1,28 +1,27 @@
 (use 'checkers)
 (use 'player)
 
-(def board
-  (ref [[  1  0  1  0  1  0  1  0 ]     ; 0
-        [  0  1  0  1  0  1  0  1 ]     ; 1
-        [  1  0  1  0  1  0  1  0 ]     ; 2
-        [  0  0  0  0  0  0  0  0 ]     ; 3
-        [  0  0  0  0  0  0  0  0 ]     ; 4
-        [  0 -1  0 -1  0 -1  0 -1 ]     ; 5
-        [ -1  0 -1  0 -1  0 -1  0 ]     ; 6
-        [  0 -1  0 -1  0 -1  0 -1 ]] )) ; 7 
-        ;  0  1  2  3  4  5  6  7
-
-(def side (ref +black+))
+(defn- unwind
+  [[this & more :as tree]]
+  (if more
+    (reduce concat
+      (for [m more] (map #(cons this %) (unwind m))))
+    (list tree)))
 
 (defn human-move
   []
+  (println)
   (println (dump-board))
-  (print "Your move -> ")
-  (flush)
-  (read))
+  (let [allowed (set (reduce concat (map unwind (my-plays))))]
+    (loop []
+      (print "Your move -> ")
+      (flush)
+      (let [move (read)]
+        (if (allowed move) move (recur))))))
 
 (defn computer-move
   []
+  (println)
   (println (dump-board))
   (print "My move -> ")
   (flush)
@@ -32,16 +31,23 @@
 
 (defn do-plays
   [[from to & more]]
-  (with-position @side (do-play from to)
+  (with-board (do-play from to)
     (if more
       (do-plays (cons to more))
-      (get-position))))
+      *board*)))
 
-(loop []
-  (with-position @side @board
-    (let [your-move (human-move) b (do-plays your-move)]
-      (dosync (ref-set board b) (alter side -))
-      (with-position @side @board
-        (let [my-move (computer-move) b (do-plays my-move)]
-          (dosync (ref-set board b) (alter side -))
-          (recur))))))
+(loop [side +black+
+       board [[  1  0  1  0  1  0  1  0 ]   ; 0
+              [  0  1  0  1  0  1  0  1 ]   ; 1
+              [  1  0  1  0  1  0  1  0 ]   ; 2
+              [  0  0  0  0  0  0  0  0 ]   ; 3
+              [  0  0  0  0  0  0  0  0 ]   ; 4
+              [  0 -1  0 -1  0 -1  0 -1 ]   ; 5
+              [ -1  0 -1  0 -1  0 -1  0 ]   ; 6
+              [  0 -1  0 -1  0 -1  0 -1 ]]] ; 7 
+              ;  0  1  2  3  4  5  6  7]
+
+  (with-position side board
+    (let [mover (if (black?) human-move computer-move)
+          board (do-plays (mover))]
+      (recur (- side) board))))
