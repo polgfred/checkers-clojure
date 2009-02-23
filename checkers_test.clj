@@ -115,7 +115,9 @@
              (in? '([3 3] [1 5] [3 7]) jumps)
              (not-in? '([3 3] [5 5]) jumps)
              (not-in? '([3 3] [1 5]) jumps)
+             (not-in? '([3 3] [5 5] [3 7] [1 5]) jumps)
              (not-in? '([3 3] [5 5] [3 7] [1 5] [3 3]) jumps)
+             (not-in? '([3 3] [1 5] [3 7] [5 5]) jumps)
              (not-in? '([3 3] [1 5] [3 7] [5 5] [3 3]) jumps)))
 
   (let [[nx ny board] (try-jump 3 3 [1 1])]
