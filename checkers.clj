@@ -17,11 +17,11 @@
 (def *side*)      ;; a single game globally
 
 (defmacro with-board
-  [board & exprs]
+  [[board] & exprs]
   `(binding [*board* ~board] ~@exprs))
 
 (defmacro with-position
-  [side board & exprs]
+  [[side board] & exprs]
   `(binding [*side* ~side *board* ~board] ~@exprs))
 
 (defmacro switch-sides

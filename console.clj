@@ -31,7 +31,7 @@
 
 (defn do-plays
   [[from to & more]]
-  (with-board (do-play from to)
+  (with-board [(do-play from to)]
     (if more
       (do-plays (cons to more))
       *board*)))
@@ -47,7 +47,7 @@
               [  0 -1  0 -1  0 -1  0 -1 ]]] ; 7 
               ;  0  1  2  3  4  5  6  7]
 
-  (with-position side board
+  (with-position [side board]
     (let [mover (if (black?) human-move computer-move)
           board (do-plays (mover))]
       (recur (- side) board))))

@@ -70,7 +70,7 @@
     (reduce compare-plays
       (for [tree more]
         (let [to (first tree)]
-          (with-board (do-play from to)
+          (with-board [(do-play from to)]
             (best-play-from (cons to play) tree)))))))
 
 ;; (with-position [...] (best-play-from (list [4 2]) (jumps-from 4 2)))
