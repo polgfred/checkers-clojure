@@ -1,20 +1,23 @@
 (ns web.checkers-server
+  (:use [compojure.http.helpers])
+  (:use [compojure.http.servlet])
+  (:use [compojure.http.routes])
   (:use [compojure.html :only (html)])
-  (:use [compojure.http.servlet :only (defservlet)])
-  (:use [compojure.http.routes :only (GET POST)])
   (:use [compojure.server.jetty :only (defserver start)])
+  (:use [compojure.file-utils :only (file)])
   (:use checkers.rules)
   (:use checkers.player))
 
 (defn main-layout
   [content]
   (html
-    [:head
-      [:title "Checkers"]
-      [:script {:type "text/javascript" :src "js/checkers.js"}]]
-    [:body
-      [:h2 "checkers-clojure"]
-      content]))
+    [:html
+      [:head
+        [:title "Checkers"]
+        [:script {:type "text/javascript" :src "/checkers/s/js/checkers.js"}]]
+      [:body
+        [:h2 "checkers-clojure"]
+        content]]))
 
 (defn board-table
   []
@@ -33,14 +36,17 @@
           [:tr
             (for [cell row] [:td cell])])])))
 
+(defservlet static-servlet
+  (GET "/*"
+    (serve-file "./web/public" (route :*))))
+
 (defservlet checkers-servlet
-  ; (GET "/"
-  ;   (file))
   (GET "/"
     [{"Content-Type" "text/html"} (main-layout (board-table))]))
 
 (defserver checkers-server
   {:port 9090}
+  "/checkers/s/*" static-servlet
   "/checkers/*" checkers-servlet)
 
 (start checkers-server)
