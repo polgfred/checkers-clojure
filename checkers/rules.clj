@@ -224,3 +224,16 @@
   (or (my-jumps) (my-moves)))
 
 ;; (my-plays)
+
+(defn unwind-plays
+  [[this & more :as tree]]
+  (if more
+    (reduce concat
+      (for [m more]
+        (map #(cons this %) (unwind-plays m))))
+    (list tree)))
+
+(defn unwind-all
+  [plays]
+  (reduce concat
+    (for [tree plays] (unwind-plays tree))))

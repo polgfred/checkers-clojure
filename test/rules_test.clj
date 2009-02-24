@@ -10,14 +10,6 @@
 (defn- not-in?
   [v coll] (not (in? v coll)))
 
-(defn- unwind
-  [[this & more :as tree]]
-  (if more
-    (reduce concat
-      (for [m more]
-        (map #(cons this %) (unwind m))))
-    (list tree)))
-
 (with-position
   [+black+
    [[  0  0  1  0  0  0  0  0  ]
@@ -85,7 +77,7 @@
     [  0  0  0  0  0  0  0  0  ]
     [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [jumps (unwind (jumps-from 2 0))]
+  (let [jumps (unwind-plays (jumps-from 2 0))]
     (assert* (in? '([2 0] [0 2]) jumps)
              (in? '([2 0] [4 2] [2 4]) jumps)
              (in? '([2 0] [4 2] [6 4] [4 6]) jumps)
@@ -110,7 +102,7 @@
     [  0  0 -1  0 -1  0  0  0  ]
     [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [jumps (unwind (jumps-from 3 3))]
+  (let [jumps (unwind-plays (jumps-from 3 3))]
     (assert* (in? '([3 3] [5 5] [3 7]) jumps)
              (in? '([3 3] [1 5] [3 7]) jumps)
              (not-in? '([3 3] [5 5]) jumps)
@@ -143,7 +135,7 @@
     [  0  0 -1  0 -1  0  0  0  ]
     [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [jumps (unwind (jumps-from 3 3))]
+  (let [jumps (unwind-plays (jumps-from 3 3))]
     (assert* (in? '([3 3] [5 5] [3 7] [1 5] [3 3]) jumps)
              (in? '([3 3] [1 5] [3 7] [5 5] [3 3]) jumps)
              (not-in? '([3 3] [5 5] [3 7] [1 5] [3 3] [5 5]) jumps)
@@ -190,7 +182,7 @@
     [  0  0  0  0  0  0  0  0  ]]]
 
   (binding [*side* +black+]
-    (let [moves (unwind (moves-from 2 4))]
+    (let [moves (unwind-plays (moves-from 2 4))]
       (assert* (in? '([2 4] [3 5]) moves)
                (in? '([2 4] [1 5]) moves)
                (not-in? '([2 4] [3 3]) moves)
@@ -201,14 +193,14 @@
         (binding [*board* board]
           (assert* (= 0 (get-p 2 4)) (= 1 (get-p 3 5)))))
 
-      (let [moves (unwind (moves-from 4 2))]
+      (let [moves (unwind-plays (moves-from 4 2))]
         (assert* (in? '([4 2] [5 3]) moves)
                  (in? '([4 2] [3 3]) moves)
                  (in? '([4 2] [5 1]) moves)
                  (in? '([4 2] [3 1]) moves)))))
 
   (binding [*side* +red+]
-    (let [moves (unwind (moves-from 4 6))]
+    (let [moves (unwind-plays (moves-from 4 6))]
       (assert* (in? '([4 6] [3 5]) moves)
                (in? '([4 6] [5 5]) moves)
                (not-in? '([4 6] [3 7]) moves)

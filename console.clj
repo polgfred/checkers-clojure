@@ -1,18 +1,11 @@
 (use 'checkers.rules)
 (use 'checkers.player)
 
-(defn- unwind
-  [[this & more :as tree]]
-  (if more
-    (reduce concat
-      (for [m more] (map #(cons this %) (unwind m))))
-    (list tree)))
-
 (defn human-move
   []
   (println)
   (println (dump-board))
-  (let [allowed (set (reduce concat (map unwind (my-plays))))]
+  (let [allowed (set (unwind-all (my-plays)))]
     (loop []
       (print "Your move -> ")
       (flush)
