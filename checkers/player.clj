@@ -1,6 +1,4 @@
-(ns player)
-
-(use 'checkers)
+(ns checkers.player (:use checkers.rules))
 
 (def *search-depth* 3) ;; root binding controls default search tree depth
 

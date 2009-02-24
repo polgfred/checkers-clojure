@@ -1,4 +1,4 @@
-(use 'checkers)
+(use 'checkers.rules)
 
 (defmacro assert*
   [& exprs]

@@ -1,4 +1,4 @@
-(ns checkers)
+(ns checkers.rules)
 
 (defn abs
   [n] (if (neg? n) (- n) n))
