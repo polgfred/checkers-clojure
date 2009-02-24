@@ -235,5 +235,4 @@
 
 (defn unwind-all
   [plays]
-  (reduce concat
-    (for [tree plays] (unwind-plays tree))))
+  (reduce concat (map unwind-plays plays)))
