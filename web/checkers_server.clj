@@ -1,12 +1,12 @@
 (ns web.checkers-server
+  (:use [compojure.html])
+  (:use [compojure.file-utils])
   (:use [compojure.http.helpers])
   (:use [compojure.http.servlet])
   (:use [compojure.http.routes])
-  (:use [compojure.html :only (html)])
-  (:use [compojure.server.jetty :only (defserver start)])
-  (:use [compojure.file-utils :only (file)])
-  (:use checkers.rules)
-  (:use checkers.player))
+  (:use [compojure.server.jetty :only (defserver start stop)])
+  (:use [checkers.rules])
+  (:use [checkers.player]))
 
 (defn main-layout
   [content]
