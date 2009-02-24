@@ -1,5 +1,5 @@
-(use 'checkers)
-(use 'player)
+(use 'checkers.rules)
+(use 'checkers.player)
 
 (defn- unwind
   [[this & more :as tree]]
