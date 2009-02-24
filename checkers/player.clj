@@ -6,8 +6,7 @@
   [& exprs]
   `(binding [*search-depth* (dec *search-depth*)] ~@exprs))
 
-(defn best-play ;; circular dependency
-  [])
+(declare best-play)
 
 (let [pb-vals
         [[ 100   0 104   0 104   0 100   0 ]
