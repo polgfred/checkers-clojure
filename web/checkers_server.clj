@@ -6,6 +6,16 @@
   (:use checkers.rules)
   (:use checkers.player))
 
+(defn main-layout
+  [content]
+  (html
+    [:head
+      [:title "Checkers"]
+      [:script {:type "text/javascript" :src "js/checkers.js"}]]
+    [:body
+      [:h2 "checkers-clojure"]
+      content]))
+
 (defn board-table
   []
   (let [side +black+
@@ -23,14 +33,14 @@
           [:tr
             (for [cell row] [:td cell])])])))
 
-
 (defservlet checkers-servlet
-  (GET "/checkers"
-    [{"Content-Type" "text/html"}
-      (html (board-table))]))
+  ; (GET "/"
+  ;   (file))
+  (GET "/"
+    [{"Content-Type" "text/html"} (main-layout (board-table))]))
 
 (defserver checkers-server
   {:port 9090}
-  "/*" checkers-servlet)
+  "/checkers/*" checkers-servlet)
 
 (start checkers-server)
