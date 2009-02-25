@@ -1,19 +1,14 @@
 (ns web.page-helpers
   (:use [compojure.html])
   (:use [compojure.html.page-helpers])
+  (:use [compojure.json])
   (:use [checkers.rules])
   (:use [checkers.player]))
 
-(defn main-layout
-  [content]
-  (html (doctype :html4)
-    [:html
-      [:head
-        [:title "Checkers"]
-        [:script {:type "text/javascript" :src "/checkers/s/js/checkers.js"}]]
-      [:body
-        [:h2 "checkers-clojure"]
-        content]]))
+(defn plays-javascript
+  []
+  [:script {:type "text/javascript"}
+    "var plays = " (json (unwind-all (my-plays))) ";"])
 
 (defn board-table
   []
@@ -27,8 +22,22 @@
                [ -1  0 -1  0 -1  0 -1  0  ]
                [  0 -1  0 -1  0 -1  0 -1  ]]]
     (with-position [side board]
-      [:table
-        (for [row *board*]
-          [:tr
-            (for [cell row] [:td cell])])])))
+      [:div#board
+        (plays-javascript)
+        [:table
+          (for [row *board*]
+            [:tr
+              (for [cell row] [:td cell])])]])))
+
+(defn main-layout
+  [content]
+  (html (doctype :html4)
+    [:html
+      [:head
+        [:title "Checkers"]
+        [:link {:type "text/css" :rel "stylesheet" :href "/checkers/s/css/checkers.css"}]
+        [:script {:type "text/javascript" :src "/checkers/s/js/checkers.js"}]]
+      [:body
+        [:h2 "checkers-clojure"]
+        content]]))
 
