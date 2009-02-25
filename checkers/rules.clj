@@ -7,7 +7,7 @@
   [& values] (/ (reduce + values) (count values)))
 
 (defn compact
-  [coll] (seq (filter #(not (nil? %)) coll)))
+  [coll] (filter #(not (nil? %)) coll))
 
 (def +size+   8)
 (def +black+  1)
@@ -139,9 +139,9 @@
 
 (defn collect-jumps
   [x y p]
-  (loop [dirs (directions p) acc nil]
+  (loop [dirs (directions p) acc ()]
     (if (empty? dirs)
-      (seq (reverse acc))
+      (reverse acc)
       (let [[nx ny board] (try-jump x y (first dirs))]
         (if board
           (let [more (binding [*board* board] (collect-jumps nx ny p))]
@@ -153,7 +153,7 @@
 (defn jumps-from
   [x y]
   (let [more (collect-jumps x y (get-p x y))]
-    (if more (cons [x y] more))))
+    (if (seq more) (cons [x y] more) more)))
 
 ;; (jumps-from 2 2)
 ;; (jumps-from 4 2)
@@ -161,7 +161,10 @@
 
 (defn my-jumps
   []
-  (compact (for [[x y] (my-squares)] (jumps-from x y))))
+  (compact
+    (for [[x y] (my-squares)]
+      (let [jumps (jumps-from x y)]
+        (if (seq jumps) jumps)))))
 
 ;; (my-jumps)
 
@@ -188,9 +191,9 @@
 
 (defn collect-moves
   [x y p]
-  (loop [dirs (directions p) acc nil]
+  (loop [dirs (directions p) acc ()]
     (if (empty? dirs)
-      (seq (reverse acc))
+      (reverse acc)
       (let [[nx ny board] (try-move x y (first dirs))]
         (if board
           (recur (rest dirs) (cons (list [nx ny]) acc))
@@ -201,13 +204,16 @@
 (defn moves-from
   [x y]
   (let [more (collect-moves x y (get-p x y))]
-    (if more (cons [x y] more))))
+    (if (seq more) (cons [x y] more) more)))
 
 ;; (moves-from 4 0)
 
 (defn my-moves
   []
-  (compact (for [[x y] (my-squares)] (moves-from x y))))
+  (compact
+    (for [[x y] (my-squares)]
+      (let [moves (moves-from x y)]
+        (if (seq moves) moves)))))
 
 ;; (my-moves)
 
@@ -221,7 +227,8 @@
 
 (defn my-plays
   []
-  (or (my-jumps) (my-moves)))
+  (let [jumps (my-jumps)]
+    (if (first jumps) jumps (my-moves))))
 
 ;; (my-plays)
 
