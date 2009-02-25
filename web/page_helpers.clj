@@ -7,8 +7,7 @@
 
 (defn plays-javascript
   []
-  [:script {:type "text/javascript"}
-    "var plays = " (json (unwind-all (my-plays))) ";"])
+  (javascript-tag (str "var plays = " (json (unwind-all (my-plays))) ";")))
 
 (defn board-table
   []
@@ -35,8 +34,8 @@
     [:html
       [:head
         [:title "Checkers"]
-        [:link {:type "text/css" :rel "stylesheet" :href "/checkers/s/css/checkers.css"}]
-        [:script {:type "text/javascript" :src "/checkers/s/js/checkers.js"}]]
+        (include-css "/checkers/s/css/checkers.css")
+        (include-js "/checkers/s/js/checkers.js")]
       [:body
         [:h2 "checkers-clojure"]
         content]]))
