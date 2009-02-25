@@ -39,7 +39,7 @@
               (= p -1) (get-p x y pr-vals)
               (= p  2) (get-p x y kb-vals)
               (= p -2) (get-p x y kr-vals)
-              (= p  0) 0)))))
+              :else    0)))))
 
 ;; (calculate-score)
 
