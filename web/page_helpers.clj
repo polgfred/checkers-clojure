@@ -7,7 +7,7 @@
 
 (defn plays-javascript
   []
-  (javascript-tag (str "var plays = " (json (unwind-all (my-plays))) ";")))
+  (javascript-tag (str "var plays = " (json (my-plays)) ";")))
 
 (defn board-table
   []
