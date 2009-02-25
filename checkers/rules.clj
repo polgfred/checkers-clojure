@@ -7,7 +7,7 @@
   [& values] (/ (reduce + values) (count values)))
 
 (defn compact
-  [coll] (filter #(not (nil? %)) coll))
+  [coll] (seq (filter #(not (nil? %)) coll)))
 
 (def +size+   8)
 (def +black+  1)
@@ -141,7 +141,7 @@
   [x y p]
   (loop [dirs (directions p) acc nil]
     (if (empty? dirs)
-      (reverse acc)
+      (seq (reverse acc))
       (let [[nx ny board] (try-jump x y (first dirs))]
         (if board
           (let [more (binding [*board* board] (collect-jumps nx ny p))]
@@ -190,7 +190,7 @@
   [x y p]
   (loop [dirs (directions p) acc nil]
     (if (empty? dirs)
-      (reverse acc)
+      (seq (reverse acc))
       (let [[nx ny board] (try-move x y (first dirs))]
         (if board
           (recur (rest dirs) (cons (list [nx ny]) acc))
