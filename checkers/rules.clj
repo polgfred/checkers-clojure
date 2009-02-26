@@ -6,9 +6,6 @@
 (defn avg
   [& values] (/ (reduce + values) (count values)))
 
-(defn compact
-  [coll] (filter #(not (nil? %)) coll))
-
 (def +size+   8)
 (def +black+  1)
 (def +red+   -1)
@@ -161,10 +158,9 @@
 
 (defn my-jumps
   []
-  (seq
-    (compact
-      (for [[x y] (my-squares)]
-        (jumps-from x y)))))
+  (seq (remove nil?
+    (for [[x y] (my-squares)]
+      (jumps-from x y)))))
 
 ;; (my-jumps)
 
@@ -210,10 +206,9 @@
 
 (defn my-moves
   []
-  (seq
-    (compact
-      (for [[x y] (my-squares)]
-        (moves-from x y)))))
+  (seq (remove nil?
+    (for [[x y] (my-squares)]
+      (moves-from x y)))))
 
 ;; (my-moves)
 
