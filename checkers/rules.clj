@@ -100,8 +100,8 @@
 
 (defn my-squares
   []
-  (for [[x y p] (squares) :when (mine? p)]
-    [x y p]))
+  (for [[x y p :as sq] (squares) :when (mine? p)]
+    sq))
 
 ;; (my-squares)
 
@@ -141,7 +141,7 @@
   [x y p]
   (loop [dirs (directions p) acc ()]
     (if (empty? dirs)
-      (reverse acc)
+      (seq (reverse acc))
       (let [[nx ny board] (try-jump x y (first dirs))]
         (if board
           (let [more (binding [*board* board] (collect-jumps nx ny p))]
@@ -153,7 +153,7 @@
 (defn jumps-from
   [x y]
   (let [more (collect-jumps x y (get-p x y))]
-    (if (seq more) (cons [x y] more) more)))
+    (if more (cons [x y] more))))
 
 ;; (jumps-from 2 2)
 ;; (jumps-from 4 2)
@@ -161,10 +161,10 @@
 
 (defn my-jumps
   []
-  (compact
-    (for [[x y] (my-squares)]
-      (let [jumps (jumps-from x y)]
-        (if (seq jumps) jumps)))))
+  (seq
+    (compact
+      (for [[x y] (my-squares)]
+        (jumps-from x y)))))
 
 ;; (my-jumps)
 
@@ -193,7 +193,7 @@
   [x y p]
   (loop [dirs (directions p) acc ()]
     (if (empty? dirs)
-      (reverse acc)
+      (seq (reverse acc))
       (let [[nx ny board] (try-move x y (first dirs))]
         (if board
           (recur (rest dirs) (cons (list [nx ny]) acc))
@@ -204,16 +204,16 @@
 (defn moves-from
   [x y]
   (let [more (collect-moves x y (get-p x y))]
-    (if (seq more) (cons [x y] more) more)))
+    (if more (cons [x y] more))))
 
 ;; (moves-from 4 0)
 
 (defn my-moves
   []
-  (compact
-    (for [[x y] (my-squares)]
-      (let [moves (moves-from x y)]
-        (if (seq moves) moves)))))
+  (seq
+    (compact
+      (for [[x y] (my-squares)]
+        (moves-from x y)))))
 
 ;; (my-moves)
 
@@ -227,8 +227,7 @@
 
 (defn my-plays
   []
-  (let [jumps (my-jumps)]
-    (if (first jumps) jumps (my-moves))))
+  (or (my-jumps) (my-moves)))
 
 ;; (my-plays)
 
