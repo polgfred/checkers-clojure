@@ -35,7 +35,7 @@
         (for [y (reverse (range +size+))]
           [:tr
             (for [x (range +size+)]
-              (table-cell x y (get-p x y board)))])]]))
+              (table-cell x y (with-board [board] (get-p x y))))])]]))
 
 (defn main-layout
   [content]
