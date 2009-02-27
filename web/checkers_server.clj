@@ -19,6 +19,6 @@
     (servlet
       (GET "/new"   (new-game  session))
       (GET "/show"  (show-game session))
-      (GET "/play"  (make-move session (params :move)))))
+      (GET "/play"  (make-move session (read-string (params :move))))))
 
 (start checkers-server)

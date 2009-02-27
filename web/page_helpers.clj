@@ -6,6 +6,11 @@
   (:use checkers.rules)
   (:use checkers.player))
 
+(defmacro with-vars
+  [[session] & exprs]
+  `(let [~'side (~session :side) ~'board (~session :board)]
+    ~@exprs))
+
 (defn plays-javascript
   []
   (javascript-tag (str "var plays = " (json (my-plays)) ";")))
@@ -35,7 +40,7 @@
   [side board]
   (with-position [side board]
     [:div#moves
-      [:h4 "move - " (if (black?) "black" "red")]
+      [:h4 "your move - " (if (black?) "black" "red")]
       (unordered-list
         (for [play (unwind-all (my-plays))]
           (link-to
@@ -56,10 +61,6 @@
           (board-table board)
           (move-links side board)]))])
 
-(defn show-game
-  [session]
-  (main-layout (session :side) (session :board)))
-
 (defn new-game
   [session]
   (dosync
@@ -76,14 +77,18 @@
          [  0 -1  0 -1  0 -1  0 -1  ]]))
   (redirect-to "/checkers/show"))
 
+(defn show-game
+  [session]
+  (with-vars [session]
+    (main-layout side board)))
+
 (defn make-move
   [session move]
-  (let [move (read-string move)]
-    (let [side (session :side) board (session :board)]
-      (with-position [side board]
-        (let [board (do-plays move)]
-          (dosync
-            (alter session assoc
-              :side (- side)
-              :board board))))))
+  (with-vars [session]
+    (with-position [side board]
+      (let [board (do-plays move)]
+        (dosync
+          (alter session assoc
+            :side (- side)
+            :board board)))))
   (redirect-to "/checkers/show"))
