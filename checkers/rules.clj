@@ -149,8 +149,8 @@
 
 (defn jumps-from
   [x y]
-  (let [more (collect-jumps x y (get-p x y))]
-    (if more (cons [x y] more))))
+  (if-let [more (collect-jumps x y (get-p x y))]
+    (cons [x y] more)))
 
 ;; (jumps-from 2 2)
 ;; (jumps-from 4 2)
@@ -199,8 +199,8 @@
 
 (defn moves-from
   [x y]
-  (let [more (collect-moves x y (get-p x y))]
-    (if more (cons [x y] more))))
+  (if-let [more (collect-moves x y (get-p x y))]
+    (cons [x y] more)))
 
 ;; (moves-from 4 0)
 
