@@ -51,7 +51,8 @@
       [:h4 "your move - black"]
       (move-links side board)]
     [:div#control
-      [:div "my move - red"]]))
+      [:h4 "my move - red"]
+      (move-links side board)]))
 
 (defn main-layout
   [side board]
