@@ -1,19 +1,24 @@
 (ns web.checkers-server
-  (:use [compojure.file-utils])
-  (:use [compojure.http.helpers])
-  (:use [compojure.http.servlet])
-  (:use [compojure.http.routes])
   (:use [compojure.server.jetty :only (defserver start stop)])
-  (:use [web.page-helpers]))
+  (:use compojure.file-utils)
+  (:use compojure.http.helpers)
+  (:use compojure.http.servlet)
+  (:use compojure.http.routes)
+  (:use web.page-helpers))
 
-(defserver checkers-server {:port 9090}
+(defserver checkers-server
+  {:port 9090}
+
+  ;; serves static pages - js/css/images
   "/checkers/s/*"
     (servlet
-      (GET "/*"
-        (serve-file "./web/public" (route :*))))
+      (GET "/*"     (serve-file "./web/public" (route :*))))
+
+  ;; handles controller actions
   "/checkers/*"
     (servlet
-      (GET "/"
-        [{"Content-Type" "text/html"} (main-layout (board-table))])))
+      (GET "/new"   (new-game  session))
+      (GET "/show"  (show-game session))
+      (GET "/play"  (make-move session (params :move)))))
 
 (start checkers-server)
