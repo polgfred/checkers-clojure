@@ -220,6 +220,15 @@
 ;; (do-play [0 2] [2 4])
 ;; (do-play [6 2] [5 3])
 
+(defn do-plays
+  [[from to & more]]
+  (with-board [(do-play from to)]
+    (if more
+      (do-plays (cons to more))
+      *board*)))
+
+;; (do-plays ([0 2] [2 4] [4 6]))
+
 (defn my-plays
   []
   (or (my-jumps) (my-moves)))

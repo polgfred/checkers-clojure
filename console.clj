@@ -22,13 +22,6 @@
     (println move)
     move))
 
-(defn do-plays
-  [[from to & more]]
-  (with-board [(do-play from to)]
-    (if more
-      (do-plays (cons to more))
-      *board*)))
-
 (loop [side +black+
        board [[  1  0  1  0  1  0  1  0  ]   ; 0
               [  0  1  0  1  0  1  0  1  ]   ; 1
