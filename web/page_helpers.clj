@@ -39,13 +39,19 @@
 (defn move-links
   [side board]
   (with-position [side board]
-    [:div#moves
-      [:h4 "your move - " (if (black?) "black" "red")]
-      (unordered-list
-        (for [play (unwind-all (my-plays))]
-          (link-to
-            (url-params "/checkers/play" {:move (str play)})
-              (h (str play)))))]))
+    (unordered-list
+      (for [play (unwind-all (my-plays))]
+        (link-to (url-params "/checkers/play" {:move (str play)})
+          (h (str play)))))))
+
+(defn control-area
+  [side board]
+  (if (= side +black+)
+    [:div#control
+      [:h4 "your move - black"]
+      (move-links side board)]
+    [:div#control
+      [:div "my move - red"]]))
 
 (defn main-layout
   [side board]
@@ -59,7 +65,7 @@
         [:body
           [:h2 "checkers-clojure"]
           (board-table board)
-          (move-links side board)]))])
+          (control-area side board)]))])
 
 (defn new-game
   [session]
