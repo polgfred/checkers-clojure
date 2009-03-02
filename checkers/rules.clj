@@ -77,17 +77,23 @@
   [p] (= p 0))
 
 (defn playable?
-  [x y] (= (rem (+ x y) 2) 0))
+  [x y]
+  (= (rem (+ x y) 2) 0))
 
 (defn promoted?
-  [nx ny p] (or (and (= p 1) (= ny 7)) (and (= p -1) (= ny 0))))
+  [nx ny p]
+  (or (and (= p  1) (= ny 7))
+      (and (= p -1) (= ny 0))))
 
 (defn promote
-  [nx ny p] (if (promoted? nx ny p) (* 2 p) p))
+  [nx ny p]
+  (if (promoted? nx ny p) (* 2 p) p))
 
 (defn squares
   []
-  (for [x (range 8) y (range 8) :when (playable? x y)]
+  (for [x (range 8)
+        y (range 8)
+        :when (playable? x y)]
     [x y (get-p x y)]))
 
 ;; (squares)
@@ -102,7 +108,8 @@
 (defn directions
   [p]
   (let [ahead-back [*side* (- *side*)] ahead [*side*]]
-    (for [dy (if (my-king? p) ahead-back ahead) dx ahead-back]
+    (for [dy (if (my-king? p) ahead-back ahead)
+          dx ahead-back]
       [dx dy])))
 
 ;; (dirs 1)
@@ -116,7 +123,9 @@
            (< -1 ny +size+)
            (=  2 (Math/abs (- nx x)))
            (=  2 (Math/abs (- ny y))))
-    (let [p (get-p x y) mx (avg x nx) my (avg y ny)]
+    (let [p (get-p x y)
+          mx (avg x nx)
+          my (avg y ny)]
       (if (and (opp? (get-p mx my))
                (open? (get-p nx ny)))
         (set-p* [x y 0] [mx my 0] [nx ny (promote nx ny p)])))))
@@ -125,7 +134,9 @@
 
 (defn try-jump
   [x y [dx dy]]
-  (let [nx (+ x dx dx) ny (+ y dy dy) board (do-jump [x y] [nx ny])]
+  (let [nx (+ x dx dx)
+        ny (+ y dy dy)
+        board (do-jump [x y] [nx ny])]
     (if board [nx ny board])))
 
 ;; (try-jump 0 0 [1 1])
@@ -176,7 +187,9 @@
 
 (defn try-move
   [x y [dx dy]]
-  (let [nx (+ x dx) ny (+ y dy) board (do-move [x y] [nx ny])]
+  (let [nx (+ x dx)
+        ny (+ y dy)
+        board (do-move [x y] [nx ny])]
     (if board [nx ny board])))
 
 ;; (try-move 4 0 [-1 1])
