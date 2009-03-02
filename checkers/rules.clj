@@ -219,9 +219,10 @@
 ;; (my-moves)
 
 (defn do-play
-  [from to]
-  (let [diff (Math/abs (- (first to) (first from)))]
-    (if (= 2 diff) (do-jump from to) (do-move from to))))
+  [[x y :as from] [nx ny :as to]]
+  (let [diff (Math/abs (- nx x))]
+    (if (= 2 diff) (do-jump from to)
+                   (do-move from to))))
 
 ;; (do-play [0 2] [2 4])
 ;; (do-play [6 2] [5 3])
