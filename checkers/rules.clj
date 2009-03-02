@@ -1,8 +1,5 @@
 (ns checkers.rules)
 
-(defn abs
-  [n] (if (neg? n) (- n) n))
-
 (defn avg
   [& values] (/ (reduce + values) (count values)))
 
@@ -117,8 +114,8 @@
            (< -1  y +size+)
            (< -1 nx +size+)
            (< -1 ny +size+)
-           (=  2 (abs (- nx x)))
-           (=  2 (abs (- ny y))))
+           (=  2 (Math/abs (- nx x)))
+           (=  2 (Math/abs (- ny y))))
     (let [p (get-p x y) mx (avg x nx) my (avg y ny)]
       (if (and (opp? (get-p mx my))
                (open? (get-p nx ny)))
@@ -170,8 +167,8 @@
            (< -1  y +size+)
            (< -1 nx +size+)
            (< -1 ny +size+)
-           (=  1 (abs (- nx x)))
-           (=  1 (abs (- ny y))))
+           (=  1 (Math/abs (- nx x)))
+           (=  1 (Math/abs (- ny y))))
     (let [p (get-p x y)]
       (if (open? (get-p nx ny))
         (set-p* [x y 0] [nx ny (promote nx ny p)])))))
@@ -214,7 +211,7 @@
 
 (defn do-play
   [from to]
-  (let [diff (abs (- (first to) (first from)))]
+  (let [diff (Math/abs (- (first to) (first from)))]
     (if (= 2 diff) (do-jump from to) (do-move from to))))
 
 ;; (do-play [0 2] [2 4])
