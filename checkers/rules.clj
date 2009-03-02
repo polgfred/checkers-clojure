@@ -133,20 +133,19 @@
 
 (defn collect-jumps
   [x y p]
-  (loop [dirs (directions p) acc ()]
-    (if (empty? dirs)
-      (seq (reverse acc))
-      (let [[nx ny board] (try-jump x y (first dirs))]
+  (remove nil?
+    (for [dir (directions p)]
+      (let [[nx ny board] (try-jump x y dir)]
         (if board
-          (let [more (binding [*board* board] (collect-jumps nx ny p))]
-            (recur (rest dirs) (cons (cons [nx ny] more) acc)))
-          (recur (rest dirs) acc))))))
+          (let [more (binding [*board* board]
+                       (seq (collect-jumps nx ny p)))]
+            (cons [nx ny] more)))))))
 
 ;; (collect-jumps 2 2 1)
 
 (defn jumps-from
   [x y]
-  (if-let [more (collect-jumps x y (get-p x y))]
+  (if-let [more (seq (collect-jumps x y (get-p x y)))]
     (cons [x y] more)))
 
 ;; (jumps-from 2 2)
@@ -155,9 +154,9 @@
 
 (defn my-jumps
   []
-  (seq (remove nil?
+  (remove nil?
     (for [[x y] (my-squares)]
-      (jumps-from x y)))))
+      (jumps-from x y))))
 
 ;; (my-jumps)
 
@@ -184,28 +183,25 @@
 
 (defn collect-moves
   [x y p]
-  (loop [dirs (directions p) acc ()]
-    (if (empty? dirs)
-      (seq (reverse acc))
-      (let [[nx ny board] (try-move x y (first dirs))]
-        (if board
-          (recur (rest dirs) (cons (list [nx ny]) acc))
-          (recur (rest dirs) acc))))))
+  (remove nil?
+    (for [dir (directions p)]
+      (let [[nx ny board] (try-move x y dir)]
+        (if board (list [nx ny]))))))
 
 ;; (collect-moves 4 0 1)
 
 (defn moves-from
   [x y]
-  (if-let [more (collect-moves x y (get-p x y))]
+  (if-let [more (seq (collect-moves x y (get-p x y)))]
     (cons [x y] more)))
 
 ;; (moves-from 4 0)
 
 (defn my-moves
   []
-  (seq (remove nil?
+  (remove nil?
     (for [[x y] (my-squares)]
-      (moves-from x y)))))
+      (moves-from x y))))
 
 ;; (my-moves)
 
@@ -228,7 +224,8 @@
 
 (defn my-plays
   []
-  (or (my-jumps) (my-moves)))
+  (let [jumps (my-jumps)]
+    (if (seq jumps) jumps (my-moves))))
 
 ;; (my-plays)
 
