@@ -228,9 +228,9 @@
 ;; (do-play [6 2] [5 3])
 
 (defn do-plays
-  [from & [to & _ :as more]]
+  [[from & [to & _ :as more]]]
   (if more (binding [*board* (do-play from to)]
-             (apply do-plays more)
+             (do-plays more)
            *board*)))
 
 ;; (do-plays ([0 2] [2 4] [4 6]))
