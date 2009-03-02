@@ -239,7 +239,7 @@
                           ([2 2] ([3 3]) ([1 3]))
                           ([4 2] ([5 3]) ([3 3]))
                           ([6 2] ([7 3]) ([5 3])))))
-          (= (my-moves) (my-plays)))
+  (assert (= (my-moves) (my-plays))))
 
 ;; unwinding
 
