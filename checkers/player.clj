@@ -46,7 +46,7 @@
 (defn calculate-score-recursive
   []
   (if (or (pos? *search-depth*)
-          (switch-sides (seq? (my-jumps))))
+          (switch-sides (seq (my-jumps))))
     (with-next-level (switch-sides (first (best-play))))
     (calculate-score)))
 
