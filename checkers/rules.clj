@@ -229,7 +229,7 @@
 ;; (do-play [6 2] [5 3])
 
 (defn do-plays
-  [[from & [to & _ :as more]]]
+  [[from & [to :as more]]]
   (if more (binding [*board* (do-play from to)]
              (do-plays more))
            *board*))
