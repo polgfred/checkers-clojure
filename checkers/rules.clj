@@ -100,7 +100,8 @@
 
 (defn my-squares
   []
-  (for [[x y p :as sq] (squares) :when (mine? p)]
+  (for [[x y p :as sq] (squares)
+        :when (mine? p)]
     sq))
 
 ;; (my-squares)
