@@ -3,6 +3,7 @@
 }
 
 #board {
+  position: relative;
   margin: 0px;
   padding: 0px;
   border-spacing: 1px;
@@ -14,7 +15,7 @@
   padding: 0px;
   border: 1px solid #000;
   width: 40px;
-  height: 40px;
+  height: 42px;
   text-align: center;
 }
 
@@ -22,8 +23,8 @@
   background-color: #fff;
 }
 
-#board td.on:hover {
-  background-color: #cb8;
+#board td.on.dojoDndContainerOver {
+/*  background-color: #cb8;*/
 }
 
 #board td.off {
@@ -39,4 +40,28 @@
 
 #control {
   margin-left: 360px;
+}
+
+/* DND */
+
+body.dojoDndMove #board td.on.dojoDndTarget {
+  background-color: #cb8;
+}
+
+.dojoDndAvatarHeader {
+  display: none;
+}
+
+.dojoDndAvatarItem td {
+  background-color: #800;
+  height: 20px;
+}
+
+.dojoDndAvatarItem img {
+  width: 20px;
+  height: 20px;
+}
+
+.dojoDndAvatarCanDrop .dojoDndAvatarItem td {
+  background-color: #080;
 }

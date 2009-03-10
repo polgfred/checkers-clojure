@@ -46,13 +46,12 @@
 
 (defn control-area
   [side board]
-  (if (= side +black+)
-    [:div#control
+  [:div#control
+    (with-position [side board] (plays-javascript))
+    (if (= side +black+)
       [:h4 "your move - black"]
-      (move-links side board)]
-    [:div#control
-      [:h4 "my move - red"]
-      (move-links side board)]))
+      [:h4 "my move - red"])
+    (move-links side board)])
 
 (defn main-layout
   [side board]
@@ -62,7 +61,8 @@
         [:head
           [:title "checkers-clojure"]
           (include-css "/checkers/s/css/checkers.css")
-          (include-js "/checkers/s/js/checkers.js")]
+          (include-js  "/checkers/s/js/dojo.js")
+          (include-js  "/checkers/s/js/checkers.js")]
         [:body
           [:h2 "checkers-clojure"]
           (board-table board)
