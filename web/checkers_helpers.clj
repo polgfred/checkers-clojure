@@ -24,4 +24,4 @@
          [ -1  0 -1  0 -1  0 -1  0  ]
          [  0 -1  0 -1  0 -1  0 -1  ]]))
   (with-session-position [session]
-    (json {:board board :plays (my-plays)})))
+    (json {:side side :board board :plays (my-plays)})))
