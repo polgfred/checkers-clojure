@@ -4,21 +4,22 @@
   (:use compojure.http.helpers)
   (:use compojure.http.servlet)
   (:use compojure.http.routes)
-  (:use web.page-helpers))
+  (:use web.checkers-helpers))
 
 (defserver checkers-server
   {:port 9090}
 
-  ;; serves static pages - js/css/images
   "/checkers/s/*"
     (servlet
+      ;; serves static pages - js/css/images
       (GET "/*"     (serve-file "./web/public" (route :*))))
 
-  ;; handles controller actions
   "/checkers/*"
     (servlet
-      (GET "/new"   (new-game  session))
-      (GET "/show"  (show-game session))
-      (GET "/play"  (make-move session (read-string (params :move))))))
+      ;; redirect root to a static page that will bootstrap via Ajax
+      (GET "/"      (redirect-to "/checkers/s/html/checkers.html"))
+      
+      ;; actions that return JSON
+      (GET "/new"   (new-game  session))))
 
 (start checkers-server)

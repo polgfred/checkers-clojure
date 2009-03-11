@@ -29,27 +29,49 @@ dojo.declare('SquareSource', dojo.dnd.Source, {
 });
 
 dojo.addOnLoad(function() {
-  // set up all drop source/targets
-  for (var y = 0; y < 8; y++) {
-    for (var x = 0; x < 8; x++) {
-      var tr = dojo.query('#board tr')[7 - y];
-      var td = dojo.query('> td', tr)[x];
-      
-      // if there is a piece here, make it a dnd item
-      var img = dojo.query('> img', td)[0];
-      if (img) dojo.addClass(img, 'dojoDndItem');
-      
-      // create the source
-      var src = new SquareSource(td, {coords: [x, y].toString()});
+  var piece_images = {
+     '1': '/checkers/s/images/pb.png',
+     '2': '/checkers/s/images/kb.png',
+    '-1': '/checkers/s/images/pr.png',
+    '-2': '/checkers/s/images/kr.png'
+  };
+  var xhr = dojo.xhrGet({
+    url: '/checkers/new',
+    handleAs: 'json'
+  });
+  xhr.addCallback(function(res) {
+    // create the board and set up targets
+    var board = dojo.byId('board');
+    board.innerHTML = '';
+    
+    for (var y = 7; y >= 0; y--) {
+      // create the table row for this row
+      var tr = dojo.create('tr', {}, board);
+      for (var x = 0; x <= 7; x++) {
+        // create the table cell for this square
+        if ((x + y) % 2 == 0) {
+          var td = dojo.create('td', {'class': 'on'}, tr);
+          // look up piece image and insert image tag
+          var p = res.board[y][x];
+          var src = piece_images[p];
+          if (src) dojo.create('img', {'src': src, 'class': 'dojoDndItem'}, td);
+          // create the drag/drop source
+          new SquareSource(td, {coords: [x, y].toString()});
+        } else {
+          // create non-playable square
+          dojo.create('td', {'class': 'off'}, tr);
+        }
+      }
     }
-  }
-  
-  // set up play_map based on moves from server
-  for (var i = 0; i < plays.length; i++) {
-    var play = plays[i];
-    var from = SquareSource.prototype.play_map[play[0]] = {};
-    for (var j = 1; j < play.length; j++) {
-      from[play[j][0]] = true;
+  });
+  xhr.addCallback(function(res) {
+    // set up play_map based on moves from server
+    for (var i = 0; i < res.plays.length; i++) {
+      var play = res.plays[i];
+      var from = SquareSource.prototype.play_map[play[0]] = {};
+      for (var j = 1; j < play.length; j++) {
+        from[play[j][0]] = true;
+      }
     }
-  }
+  });
 });
