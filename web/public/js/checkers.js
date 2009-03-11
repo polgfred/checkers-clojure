@@ -4,34 +4,42 @@ dojo.declare('Game', null, {
     this._side = side;
     this._board = board;
     // this._playMap = {};
+    // this._undoStack = [];
   },
   getPiece: function(x, y) {
     return this._board[y][x];
   },
-  doMove: function(from, to) {
+  doPlay: function(from, to) {
     // perform the move
+    
+  },
+  undoPlay: function(from, to, jumped) {
+    // undo part of a move
   },
   isPlay: function(from, to) {
     // whether this is a valid move
-    return (this._playMap[from] || dojo.dnd._empty)[to];
+    var fromMap = this._playMap[from];
+    if (fromMap) return fromMap[to];
   },
   updatePlayMap: function(plays) {
-    // _playMap contains a mapping for each legal move, such that:
+    // _playMap is a mapping over the tree of legal moves:
     //   this._playMap['2,2']['3,3'] <==> true
-    // if the move from 2,2 => 3,3 is allowed
-    this._playMap = {};
-    // iterate through plays array from server and build the map
-    for (var i = 0; i < plays.length; i++) {
-      var play = plays[i];
-      var fromMap = this._playMap[play[0]] = {};
-      for (var j = 1; j < play.length; j++) {
-        fromMap[play[j][0]] = true;
-      }
-    }
+    //   this._playMap['2,2']['4,4']['6,6'] <==> true
+    // - a terminal move yields true
+    // - a partial move yields a mapping over the remaining moves
+    this._playMap = this._playsToMap(plays);
+  },
+  _playsToMap: function(plays) {
+    // helper
+    var playMap = {};
+    dojo.forEach(plays, function(play) {
+      playMap[play[0]] = (play.length == 1 ? true : this._playsToMap(play.slice(1)));
+    }, this);
+    return playMap;
   }
 });
 
-// the global game object
+// the global game object - will be defined by addOnLoad
 var game;
 
 dojo.require('dojo.dnd.Source');
@@ -103,6 +111,6 @@ dojo.addOnLoad(function() {
   dojo.subscribe('/dnd/drop', function(source) {
     // hook the drop event into the game object
     var target = dojo.dnd.manager().target;
-    game.doMove(source._coords, target._coords);
+    game.doPlay(source._coords, target._coords);
   });
 });
