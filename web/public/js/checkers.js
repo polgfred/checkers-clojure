@@ -56,12 +56,20 @@ dojo.declare('Game', null, {
     var nodes = dojo.query('> img', td);
     if (nodes.length > 0) return nodes[0];
   },
-  constructor: function(side, board) {
-    // keep track of the current position
-    this._side = side;
-    this._board = board;
-    this._plays = [];
-    this._setupBoard();
+  constructor: function() {
+    // get a new game from the server
+    dojo.xhrGet({
+      url: '/checkers/new',
+      handleAs: 'json',
+      load: dojo.hitch(this, function(res) {
+        // set up the game attributes
+        this._side = res.side;
+        this._board = res.board;
+        this._plays = [];
+        this._setupBoard();
+        this.updatePlayMap(res.plays);
+      })
+    });
     // listen for drops
     dojo.subscribe('/dnd/drop', this, function(source) {
       var target = dojo.dnd.manager().target;
@@ -91,24 +99,31 @@ dojo.declare('Game', null, {
       this._board[my][mx] = 0;
       dojo.destroy(this._getImg(mx, my));
     }
-    // fire an event
+    // see if any plays remain
+    this._playMap = {};
     if (playMap == true) {
       // move complete
-      dojo.publish('/game/move/complete', [this._plays]);
+      this.onPlayComplete();
     } else if (playMap) {
       // still your move
-      this._playMap = {};
       this._playMap[to] = playMap;
-      dojo.publish('/game/move/partial', [this._plays]);
     }
-  },
-  undoPlay: function(from, to, jumped) {
-    // undo part of a move
   },
   isPlay: function(from, to) {
     // whether this is a valid move
     var fromMap = this._playMap[from];
     if (fromMap) return fromMap[to];
+  },
+  onPlayComplete: function() {
+    // get next move from the server
+    dojo.xhrGet({
+      url: '/checkers/play',
+      handleAs: 'json',
+      content: {move: dojo.toJson(this._plays)},
+      load: dojo.hitch(this, function(res) {
+        console.log(res);
+      })
+    });
   },
   updatePlayMap: function(plays) {
     // _playMap is a mapping over the tree of legal moves:
@@ -129,14 +144,5 @@ dojo.declare('Game', null, {
 });
 
 dojo.addOnLoad(function() {
-  // get the new position on page load
-  var xhr = dojo.xhrGet({
-    url: '/checkers/new',
-    handleAs: 'json',
-    load: function(res) {
-      // set up the global game object
-      game = new Game(res.side, res.board);
-      game.updatePlayMap(res.plays);
-    }
-  });
+  game = new Game();
 });
