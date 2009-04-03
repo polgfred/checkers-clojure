@@ -1,4 +1,5 @@
 (ns web.checkers-helpers
+  (:use compojure.http.session)
   (:use compojure.json)
   (:use checkers.rules)
   (:use checkers.player))
@@ -9,19 +10,22 @@
     (with-position [~'side ~'board]
       ~@exprs)))
 
+(def +new-board+ [[  1  0  1  0  1  0  1  0  ]
+                  [  0  1  0  1  0  1  0  1  ]
+                  [  1  0  1  0  1  0  1  0  ]
+                  [  0  0  0  0  0  0  0  0  ]
+                  [  0  0  0  0  0  0  0  0  ]
+                  [  0 -1  0 -1  0 -1  0 -1  ]
+                  [ -1  0 -1  0 -1  0 -1  0  ]
+                  [  0 -1  0 -1  0 -1  0 -1  ]])
+
 (defn new-game
   [session]
-  (dosync
-    (alter session assoc
-      :side +black+
-      :board
-        [[  1  0  1  0  1  0  1  0  ]
-         [  0  1  0  1  0  1  0  1  ]
-         [  1  0  1  0  1  0  1  0  ]
-         [  0  0  0  0  0  0  0  0  ]
-         [  0  0  0  0  0  0  0  0  ]
-         [  0 -1  0 -1  0 -1  0 -1  ]
-         [ -1  0 -1  0 -1  0 -1  0  ]
-         [  0 -1  0 -1  0 -1  0 -1  ]]))
-  (with-session-position [session]
-    (json {:side side :board board :plays (my-plays)})))
+  (let [session (assoc session :side +black+ :board +new-board+)]
+    (write-session session)
+    (with-session-position [session]
+      (json {:side side :board board :plays (my-plays)}))))
+
+(defn make-move
+  [session move]
+  (let [move ()]))

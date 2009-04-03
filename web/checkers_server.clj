@@ -1,25 +1,20 @@
 (ns web.checkers-server
-  (:use [compojure.server.jetty :only (defserver start stop)])
+  (:use [compojure.server.jetty :only [run-server]])
   (:use compojure.file-utils)
   (:use compojure.http.helpers)
   (:use compojure.http.servlet)
   (:use compojure.http.routes)
   (:use web.checkers-helpers))
 
-(defserver checkers-server
-  {:port 9090}
+(defroutes checkers-server
+  ;; serves static pages - js/css/images
+  (GET "/s/*" (serve-file "./web/public" ((request :route-params) :*)))
+  
+  ;; actions that return JSON
+  (GET "/new"  (new-game  session))
+  (GET "/play" (make-move session (params :move)))
+  
+  ;; redirect root to a static page that will bootstrap via Ajax
+  (GET "/" (redirect-to "/s/html/checkers.html")))
 
-  "/checkers/s/*"
-    (servlet
-      ;; serves static pages - js/css/images
-      (GET "/*"     (serve-file "./web/public" (route :*))))
-
-  "/checkers/*"
-    (servlet
-      ;; redirect root to a static page that will bootstrap via Ajax
-      (GET "/"      (redirect-to "/checkers/s/html/checkers.html"))
-      
-      ;; actions that return JSON
-      (GET "/new"   (new-game  session))))
-
-(start checkers-server)
+(run-server {:port 9090} "/*" (servlet checkers-server))

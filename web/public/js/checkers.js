@@ -21,10 +21,10 @@ dojo.declare('SquareSource', dojo.dnd.Source, {
 
 dojo.declare('Game', null, {
   _pieceImages: {
-     '1': '/checkers/s/images/pb.png',
-     '2': '/checkers/s/images/kb.png',
-    '-1': '/checkers/s/images/pr.png',
-    '-2': '/checkers/s/images/kr.png'
+     '1': '/s/images/pb.png',
+     '2': '/s/images/kb.png',
+    '-1': '/s/images/pr.png',
+    '-2': '/s/images/kr.png'
   },
   _setupBoard: function() {
     // create the board and set up targets
@@ -59,7 +59,7 @@ dojo.declare('Game', null, {
   constructor: function() {
     // get a new game from the server
     dojo.xhrGet({
-      url: '/checkers/new',
+      url: '/new',
       handleAs: 'json',
       load: dojo.hitch(this, function(res) {
         // set up the game attributes
@@ -117,7 +117,7 @@ dojo.declare('Game', null, {
   onPlayComplete: function() {
     // get next move from the server
     dojo.xhrGet({
-      url: '/checkers/play',
+      url: '/play',
       handleAs: 'json',
       content: {move: dojo.toJson(this._plays)},
       load: dojo.hitch(this, function(res) {
