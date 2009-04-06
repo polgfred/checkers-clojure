@@ -19,13 +19,27 @@
                   [ -1  0 -1  0 -1  0 -1  0  ]
                   [  0 -1  0 -1  0 -1  0 -1  ]])
 
-(defn new-game
+(defn game-new
   [session]
-  (let [session (assoc session :side +black+ :board +new-board+)]
-    (write-session session)
-    (with-session-position [session]
-      (json {:side side :board board :plays (my-plays)}))))
+  (println "in game-new:")
+  (with-position [+black+ +new-board+]
+    (println "new game")
+    (println (dump-board *board*))
+    (write-session (assoc session :side *side* :board *board*))
+    (json {:side *side* :board *board* :plays (my-plays)})))
 
-(defn make-move
+(defn game-play
   [session move]
-  (let [move ()]))
+  (println "in game-play:")
+  (with-session-position [session]
+    (let [board (do-plays move)]
+      (println "your move")
+      (println (dump-board board))
+      (with-position [(- side) board]
+        (let [move (second (best-play))
+              board (do-plays move)]
+          (println "my move")
+          (println (dump-board board))
+          (with-position [side board]
+            (write-session (assoc session :board board))
+            (json {:side side :board board :plays (my-plays)})))))))
