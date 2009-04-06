@@ -21,10 +21,10 @@ dojo.declare('SquareSource', dojo.dnd.Source, {
 
 dojo.declare('Game', null, {
   _pieceImages: {
-     '1': '/s/images/pb.png',
-     '2': '/s/images/kb.png',
-    '-1': '/s/images/pr.png',
-    '-2': '/s/images/kr.png'
+     '1': 'pb.png',
+     '2': 'kb.png',
+    '-1': 'pr.png',
+    '-2': 'kr.png'
   },
   _setupBoard: function() {
     // create the board and set up targets
@@ -38,9 +38,13 @@ dojo.declare('Game', null, {
         if ((x + y) % 2 == 0) {
           // create playable square
           var td = dojo.create('td', {'class': 'on'}, tr);
-          // look up piece image and insert image tag
-          var image = this._pieceImages[this._board[y][x]];
-          if (image) dojo.create('img', {'src': image, 'class': 'dojoDndItem'}, td);
+          var p = this._board[y][x];
+          if (p != 0)
+            // create image tag for piece
+            dojo.create('img', {
+              src: '/s/images/' + this._pieceImages[p],
+              'class': 'dojoDndItem'
+            }, td);
           // create the drag/drop source
           new SquareSource(td, {coords: [x, y]});
         } else {
