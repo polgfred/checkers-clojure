@@ -66,9 +66,9 @@
 
 (defn my-squares
   [b s]
-  (for [[x y p :as sq] (squares b)
+  (for [[x y p :as xyp] (squares b)
         :when (mine? s p)]
-    sq))
+    xyp))
 
 (defn directions
   [s p]
