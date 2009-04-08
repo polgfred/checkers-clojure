@@ -32,52 +32,49 @@
         (vec (reverse (for [r kb-vals] (vec (reverse (map - r))))))]
 
   (defn calculate-score
-    []
+    [b]
     (reduce +
-      (for [[x y p] (squares)]
-        (cond (= p  1) (get-p x y pb-vals)
-              (= p -1) (get-p x y pr-vals)
-              (= p  2) (get-p x y kb-vals)
-              (= p -2) (get-p x y kr-vals)
+      (for [[x y p] (squares b)]
+        (cond (= p  1) (get-p pb-vals x y)
+              (= p -1) (get-p pr-vals x y)
+              (= p  2) (get-p kb-vals x y)
+              (= p -2) (get-p kr-vals x y)
               :else    0)))))
 
-;; (calculate-score)
-
 (defn calculate-score-recursive
-  []
+  [b s]
   (if (or (pos? *search-depth*)
-          (switch-sides (seq (my-jumps))))
-    (with-next-level (switch-sides (first (best-play))))
-    (calculate-score)))
+          (seq (my-jumps b (- s))))
+    (with-next-level (first (best-play b (- s))))
+    (calculate-score b)))
 
-;; (calculate-score-recursive)
-
-(defn compare-plays
-  ([] [(if (black?) -99999 +99999)])
-  ([p1 p2]
-    (let [cmp (if (black?) > <)]
-      (if (cmp (first p1) (first p2)) p1 p2))))
+(def compare-plays-fn
+  (memoize
+    (fn [s]
+      (if (= s +black+)
+        (fn ([] [-99999])
+            ([p1 p2] 
+              (if (> (first p1) (first p2)) p1 p2)))
+        (fn ([] [+99999])
+            ([p1 p2]
+              (if (< (first p1) (first p2)) p1 p2)))))))
 
 (defn best-play-from
-  [play [from & more]]
+  [b s play [from & more]]
   (if (empty? more)
-    (let [play (reverse play) score (calculate-score-recursive)]
-      ;; (println *search-depth* score play)
+    (let [play  (reverse play)
+          score (calculate-score-recursive b s)]
       [score play])
-    (reduce compare-plays
+    (reduce (compare-plays-fn s)
       (for [tree more]
-        (let [to (first tree)]
-          (with-board [(do-play from to)]
-            (best-play-from (cons to play) tree)))))))
-
-;; (with-position [...] (best-play-from (list [4 2]) (jumps-from 4 2)))
+        (let [to (first tree)
+              b  (do-play b s from to)]
+          (best-play-from b s (cons to play) tree))))))
 
 (defn best-play
-  []
-  (let [plays (my-plays)]
-    (reduce compare-plays
+  [b s]
+  (let [plays (my-plays b s)]
+    (reduce (compare-plays-fn s)
       (for [tree plays]
         (let [from (first tree)]
-          (best-play-from (list from) tree))))))
-
-;; (with-position [...] (best-play))
+          (best-play-from b s (list from) tree))))))
