@@ -35,28 +35,28 @@
           (list (str "  " (reduce str (map num-s (range +size+))) "\n"))))))
 
 (defn get-p
-  [board x y] (get (get board y) x))
+  [b x y] (get (get b y) x))
 
 (defn set-p
-  [board x y p] (assoc board y (assoc (get board y) x p)))
+  [b x y p] (assoc b y (assoc (get b y) x p)))
 
 (defmacro set-p*
-  [board this & more]
+  [b this & more]
   (if more
-    `(set-p (set-p* ~board ~@more) ~@this)
-    `(set-p ~board ~@this)))
+    `(set-p (set-p* ~b ~@more) ~@this)
+    `(set-p ~b ~@this)))
 
 (defn my-piece?
-  [side p] (= p side))
+  [s p] (= p s))
 
 (defn my-king?
-  [side p] (= p (* 2 side)))
+  [s p] (= p (* 2 s)))
 
 (defn mine?
-  [side p] (or (my-piece? side p) (my-king? side p)))
+  [s p] (or (my-piece? s p) (my-king? s p)))
 
 (defn opp?
-  [side p] (mine? side (- p)))
+  [s p] (mine? s (- p)))
 
 (defn open?
   [p] (= p 0))
@@ -75,122 +75,122 @@
   (if (promoted? nx ny p) (* 2 p) p))
 
 (defn squares
-  [board]
+  [b]
   (for [x (range 8)
         y (range 8)
         :when (playable? x y)]
-    [x y (get-p board x y)]))
+    [x y (get-p b x y)]))
 
 (defn my-squares
-  [board side]
-  (for [[x y p :as sq] (squares board)
-        :when (mine? side p)]
+  [b s]
+  (for [[x y p :as sq] (squares b)
+        :when (mine? s p)]
     sq))
 
 (defn directions
-  [side p]
-  (let [ahead-back [side (- side)] ahead [side]]
-    (for [dy (if (my-king? side p) ahead-back ahead)
+  [s p]
+  (let [ahead-back [s (- s)] ahead [s]]
+    (for [dy (if (my-king? s p) ahead-back ahead)
           dx ahead-back]
       [dx dy])))
 
 (defn do-jump
-  [board side [x y] [nx ny]]
+  [b s [x y] [nx ny]]
   (if (and (< -1  x +size+)
            (< -1  y +size+)
            (< -1 nx +size+)
            (< -1 ny +size+)
            (=  2 (Math/abs (- nx x)))
            (=  2 (Math/abs (- ny y))))
-    (let [p (get-p board x y)
+    (let [p (get-p b x y)
           mx (avg x nx)
           my (avg y ny)]
-      (if (and (opp? side (get-p board mx my))
-               (open? (get-p board nx ny)))
-        (set-p* board [x y 0] [mx my 0] [nx ny (promote nx ny p)])))))
+      (if (and (opp? s (get-p b mx my))
+               (open? (get-p b nx ny)))
+        (set-p* b [x y 0] [mx my 0] [nx ny (promote nx ny p)])))))
 
 (defn try-jump
-  [board side x y [dx dy]]
+  [b s x y [dx dy]]
   (let [nx (+ x dx dx)
         ny (+ y dy dy)
-        board (do-jump board side [x y] [nx ny])]
-    (if board [nx ny board])))
+        b (do-jump b s [x y] [nx ny])]
+    (if b [nx ny b])))
 
 (defn collect-jumps
-  [board side x y p]
+  [b s x y p]
   (remove nil?
-    (for [dir (directions side p)]
-      (let [[nx ny board] (try-jump board side x y dir)]
-        (if board
-          (let [more (seq (collect-jumps board side nx ny p))]
+    (for [dir (directions s p)]
+      (let [[nx ny b] (try-jump b s x y dir)]
+        (if b
+          (let [more (seq (collect-jumps b s nx ny p))]
             (cons [nx ny] more)))))))
 
 (defn jumps-from
-  [board side x y]
-  (if-let [more (seq (collect-jumps board side x y (get-p board x y)))]
+  [b s x y]
+  (if-let [more (seq (collect-jumps b s x y (get-p b x y)))]
     (cons [x y] more)))
 
 (defn my-jumps
-  [board side]
+  [b s]
   (remove nil?
-    (for [[x y] (my-squares board side)]
-      (jumps-from board side x y))))
+    (for [[x y] (my-squares b s)]
+      (jumps-from b s x y))))
 
 (defn do-move
-  [board side [x y] [nx ny]]
+  [b s [x y] [nx ny]]
   (if (and (< -1  x +size+)
            (< -1  y +size+)
            (< -1 nx +size+)
            (< -1 ny +size+)
            (=  1 (Math/abs (- nx x)))
            (=  1 (Math/abs (- ny y))))
-    (let [p (get-p board x y)]
-      (if (open? (get-p board nx ny))
-        (set-p* board [x y 0] [nx ny (promote nx ny p)])))))
+    (let [p (get-p b x y)]
+      (if (open? (get-p b nx ny))
+        (set-p* b [x y 0] [nx ny (promote nx ny p)])))))
 
 (defn try-move
-  [board side x y [dx dy]]
+  [b s x y [dx dy]]
   (let [nx (+ x dx)
         ny (+ y dy)
-        board (do-move board side [x y] [nx ny])]
-    (if board [nx ny board])))
+        b (do-move b s [x y] [nx ny])]
+    (if b [nx ny b])))
 
 (defn collect-moves
-  [board side x y p]
+  [b s x y p]
   (remove nil?
-    (for [dir (directions side p)]
-      (let [[nx ny board] (try-move board side x y dir)]
-        (if board (list [nx ny]))))))
+    (for [dir (directions s p)]
+      (let [[nx ny b] (try-move b s x y dir)]
+        (if b (list [nx ny]))))))
 
 (defn moves-from
-  [board side x y]
-  (if-let [more (seq (collect-moves board side x y (get-p board x y)))]
+  [b s x y]
+  (if-let [more (seq (collect-moves b s x y (get-p b x y)))]
     (cons [x y] more)))
 
 (defn my-moves
-  [board side]
+  [b s]
   (remove nil?
-    (for [[x y] (my-squares board side)]
-      (moves-from board side x y))))
+    (for [[x y] (my-squares b s)]
+      (moves-from b s x y))))
 
 (defn do-play
-  [board side [x y :as from] [nx ny :as to]]
+  [b s [x y :as from] [nx ny :as to]]
   (let [diff (Math/abs (- nx x))]
     (if (= 2 diff)
-      (do-jump board side from to)
-      (do-move board side from to))))
+      (do-jump b s from to)
+      (do-move b s from to))))
 
 (defn do-plays
-  [board side [from & [to :as more]]]
+  [b s [from & [to :as more]]]
   (if more
-    (let [board (do-play board side from to)]
-      (do-plays board side more))
-    board))
+    (let [b (do-play b s from to)]
+      (do-plays b s more))
+    b))
 
 (defn my-plays
-  [board side]
-  (let [jumps (my-jumps board side)]
-    (if (seq jumps) jumps (my-moves board side))))
+  [b s]
+  (let [jumps (my-jumps b s)]
+    (if (seq jumps) jumps (my-moves b s))))
 
 (defn unwind-plays
   [[this & more :as tree]]
