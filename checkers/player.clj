@@ -34,7 +34,6 @@
               (= p  2) (get-p kb-vals x y)
               (= p -2) (get-p kr-vals x y)
               :else    0)))))
-              (declare best-play)
 
 (declare best-play)
 
@@ -58,14 +57,14 @@
 (defn best-play-from
   [b s v play [[x y] & more]]
   (if (empty? more)
-    (let [play  (reverse play)
+    (let [play (reverse play)
           score (calculate-score-recursive b s v)]
       [score play])
     (reduce (compare-plays-fn s)
       (for [tree more]
-        (let [[nx ny] (first tree)
-              b  (do-play b s x y nx ny)]
-          (best-play-from b s v (cons [nx ny] play) tree))))))
+        (let [[nx ny :as nxy] (first tree)
+              b (do-play b s x y nx ny)]
+          (best-play-from b s v (cons nxy play) tree))))))
 
 (defn best-play
   ([b s] (best-play b s *search-depth*))
@@ -73,5 +72,5 @@
     (let [plays (my-plays b s)]
       (reduce (compare-plays-fn s)
         (for [tree plays]
-          (let [[x y] (first tree)]
-            (best-play-from b s v (list [x y]) tree)))))))
+          (let [[x y :as xy] (first tree)]
+            (best-play-from b s v (list xy) tree)))))))
