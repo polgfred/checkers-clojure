@@ -53,11 +53,11 @@
     (fn [s]
       (if (= s +black+)
         (fn ([] [-99999])
-            ([p1 p2]
-              (if (> (first p1) (first p2)) p1 p2)))
+            ([& plays]
+              (first (sort-by first > plays))))
         (fn ([] [+99999])
-            ([p1 p2]
-              (if (< (first p1) (first p2)) p1 p2)))))))
+            ([& plays]
+              (first (sort-by first < plays))))))))
 
 (defn best-play-from
   [b s play [[x y] & more]]
