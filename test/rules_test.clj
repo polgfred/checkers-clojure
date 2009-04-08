@@ -169,13 +169,13 @@
     (let [[nx ny b2] (try-move b +black+ 2 4 [1 1])]
       (assert* (= [nx ny] [3 5])
                (= 0 (get-p b2 2 4))
-               (= 1 (get-p b2 3 5))))
+               (= 1 (get-p b2 3 5)))))
 
-    (let [moves (unwind-plays (moves-from b +black+ 4 2))]
-      (assert* (in? '([4 2] [5 3]) moves)
-               (in? '([4 2] [3 3]) moves)
-               (in? '([4 2] [5 1]) moves)
-               (in? '([4 2] [3 1]) moves))))
+  (let [moves (unwind-plays (moves-from b +black+ 4 2))]
+    (assert* (in? '([4 2] [5 3]) moves)
+             (in? '([4 2] [3 3]) moves)
+             (in? '([4 2] [5 1]) moves)
+             (in? '([4 2] [3 1]) moves)))
 
   (let [moves (unwind-plays (moves-from b +red+ 4 6))]
     (assert* (in? '([4 6] [3 5]) moves)
