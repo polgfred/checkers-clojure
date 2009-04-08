@@ -76,5 +76,5 @@
   (let [plays (my-plays b s)]
     (reduce (compare-plays-fn s)
       (for [tree plays]
-        (let [from (first tree)]
-          (best-play-from b s (list from) tree))))))
+        (let [[x y] (first tree)]
+          (best-play-from b s (list [x y]) tree))))))
