@@ -7,8 +7,6 @@
 (def +black+  1)
 (def +red+   -1)
 
-(defstruct Game :side :board)
-
 (let [chr-s {0 ". " 1 "b " 2 "B " -1 "r " -2 "R "}
       num-s (partial format "%d ")]
   (defn dump-board
