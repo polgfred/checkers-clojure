@@ -1,12 +1,6 @@
 (ns checkers.player (:use checkers.rules))
 
-(def *search-depth* 3) ;; root binding controls default search tree depth
-
-(defmacro with-next-level
-  [& exprs]
-  `(binding [*search-depth* (dec *search-depth*)] ~@exprs))
-
-(declare best-play)
+(def *search-depth* 3)
 
 (let [pb-vals
         [[ 100   0 104   0 104   0 100   0 ]
@@ -40,12 +34,14 @@
               (= p  2) (get-p kb-vals x y)
               (= p -2) (get-p kr-vals x y)
               :else    0)))))
+              (declare best-play)
+
+(declare best-play)
 
 (defn calculate-score-recursive
-  [b s]
-  (if (or (pos? *search-depth*)
-          (seq (my-jumps b (- s))))
-    (with-next-level (first (best-play b (- s))))
+  [b s v]
+  (if (or (pos? v) (seq (my-jumps b (- s))))
+    (first (best-play b (- s) (dec v)))
     (calculate-score b)))
 
 (def compare-plays-fn
@@ -60,21 +56,22 @@
               (first (sort-by first < plays))))))))
 
 (defn best-play-from
-  [b s play [[x y] & more]]
+  [b s v play [[x y] & more]]
   (if (empty? more)
     (let [play  (reverse play)
-          score (calculate-score-recursive b s)]
+          score (calculate-score-recursive b s v)]
       [score play])
     (reduce (compare-plays-fn s)
       (for [tree more]
         (let [[nx ny] (first tree)
               b  (do-play b s x y nx ny)]
-          (best-play-from b s (cons [nx ny] play) tree))))))
+          (best-play-from b s v (cons [nx ny] play) tree))))))
 
 (defn best-play
-  [b s]
-  (let [plays (my-plays b s)]
-    (reduce (compare-plays-fn s)
-      (for [tree plays]
-        (let [[x y] (first tree)]
-          (best-play-from b s (list [x y]) tree))))))
+  ([b s] (best-play b s *search-depth*))
+  ([b s v]
+    (let [plays (my-plays b s)]
+      (reduce (compare-plays-fn s)
+        (for [tree plays]
+          (let [[x y] (first tree)]
+            (best-play-from b s v (list [x y]) tree)))))))
