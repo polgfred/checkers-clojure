@@ -10,99 +10,88 @@
 (defn- not-in?
   [v coll] (not (in? v coll)))
 
-(with-position
-  [+black+
-   [[  0  0  1  0  0  0  0  0  ]
-    [  0 -1  0 -1  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0 -1  0 -1  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0 -1  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]]]
+(let [b  [[  0  0  1  0  0  0  0  0  ]
+          [  0 -1  0 -1  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0 -1  0 -1  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0 -1  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]]]
 
   ;;; basic get/set tests
 
-  (assert* (==  0 (get-p 0 0))
-           (==  1 (get-p 2 0))
-           (== -1 (get-p 1 1)))
+  (assert* (==  0 (get-p b 0 0))
+           (==  1 (get-p b 2 0))
+           (== -1 (get-p b 1 1)))
 
-  (binding [*board* (set-p 0 0 2)]
-    (assert (== 2 (get-p 0 0))))
+  (let [b2 (set-p b 0 0 2)]
+    (assert (== 2 (get-p b2 0 0))))
 
-  (binding [*board* (set-p* [4 0 1] [5 1 -1] [6 2 0])]
-    (assert* (==  1 (get-p 4 0))
-             (== -1 (get-p 5 1))
-             (==  0 (get-p 6 2))))
+  (let [b2 (set-p* b [4 0 1] [5 1 -1] [6 2 0])]
+    (assert* (==  1 (get-p b2 4 0))
+             (== -1 (get-p b2 5 1))
+             (==  0 (get-p b2 6 2))))
 
   ;;; square enumerations
 
-  (binding [*side* +black+]
-    (assert* (in? [0 0 0] (squares))
-             (in? [2 0 1] (squares))
-             (in? [1 1 -1] (squares))
-             (not-in? [0 1 0] (squares)))
+  (assert* (in? [0 0 0] (squares b))
+           (in? [2 0 1] (squares b))
+           (in? [1 1 -1] (squares b))
+           (not-in? [0 1 0] (squares b)))
 
-    (assert* (not-in? [0 0 0] (my-squares))
-             (in? [2 0 1] (my-squares))
-             (not-in? [1 1 -1] (my-squares))
-             (not-in? [0 1 0] (my-squares))))
+  (assert* (not-in? [0 0 0] (my-squares b +black+))
+           (in? [2 0 1] (my-squares b +black+))
+           (not-in? [1 1 -1] (my-squares b +black+))
+           (not-in? [0 1 0] (my-squares b +black+)))
 
-  (binding [*side* +red+]
-    (assert* (not-in? [0 0 0] (my-squares))
-             (not-in? [2 0 1] (my-squares))
-             (in? [1 1 -1] (my-squares))
-             (not-in? [0 1 0] (my-squares))))
+  (assert* (not-in? [0 0 0] (my-squares b +red+))
+           (not-in? [2 0 1] (my-squares b +red+))
+           (in? [1 1 -1] (my-squares b +red+))
+           (not-in? [0 1 0] (my-squares b +red+)))
 
   ;;; direction enumerations
 
-  (binding [*side* +black+]
-    (assert* (= (directions 1) '([1 1] [-1 1]))
-             (= (directions 2) '([1 1] [-1 1] [1 -1] [-1 -1]))))
+  (assert* (= (directions +black+ 1) '([1 1] [-1 1]))
+           (= (directions +black+ 2) '([1 1] [-1 1] [1 -1] [-1 -1])))
 
-  (binding [*side* +red+]
-    (assert* (= (directions -1) '([-1 -1] [1 -1]))
-             (= (directions -2) '([-1 -1] [1 -1] [-1 1] [1 1])))))
+  (assert* (= (directions +red+ -1) '([-1 -1] [1 -1]))
+           (= (directions +red+ -2) '([-1 -1] [1 -1] [-1 1] [1 1]))))
 
 ;;; jump logic
 
-(with-position
-  [+black+
-   [[  0  0  1  0  0  0  0  0  ]
-    [  0 -1  0 -1  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0 -1  0 -1  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0 -1  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]]]
+(let [b  [[  0  0  1  0  0  0  0  0  ]
+          [  0 -1  0 -1  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0 -1  0 -1  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0 -1  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [jumps (unwind-plays (jumps-from 2 0))]
+  (let [jumps (unwind-plays (jumps-from b +black+ 2 0))]
     (assert* (in? '([2 0] [0 2]) jumps)
              (in? '([2 0] [4 2] [2 4]) jumps)
              (in? '([2 0] [4 2] [6 4] [4 6]) jumps)
              (not-in? '([2 0] [4 2]) jumps)
              (not-in? '([2 0] [4 2] [6 4]) jumps)))
 
-  (let [[nx ny board] (try-jump 2 0 [-1 1])]
-    (assert (= [nx ny] [0 2]))
-    (binding [*board* board]
-      (assert* (= 0 (get-p 2 0))
-               (= 0 (get-p 1 1))
-               (= 1 (get-p 0 2))))))
+  (let [[nx ny b2] (try-jump b +black+ 2 0 [-1 1])]
+    (assert* (= [nx ny] [0 2])
+             (= 0 (get-p b2 2 0))
+             (= 0 (get-p b2 1 1))
+             (= 1 (get-p b2 0 2)))))
 
-(with-position
-  [+black+
-   [[  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  1  0  0  0  0  ]
-    [  0  0 -1  0 -1  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0 -1  0 -1  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]]]
+(let [b  [[  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  1  0  0  0  0  ]
+          [  0  0 -1  0 -1  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0 -1  0 -1  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [jumps (unwind-plays (jumps-from 3 3))]
+  (let [jumps (unwind-plays (jumps-from b +black+ 3 3))]
     (assert* (in? '([3 3] [5 5] [3 7]) jumps)
              (in? '([3 3] [1 5] [3 7]) jumps)
              (not-in? '([3 3] [5 5]) jumps)
@@ -112,30 +101,26 @@
              (not-in? '([3 3] [1 5] [3 7] [5 5]) jumps)
              (not-in? '([3 3] [1 5] [3 7] [5 5] [3 3]) jumps)))
 
-  (let [[nx ny board] (try-jump 3 3 [1 1])]
-    (binding [*board* board]
-      (assert* (= 0 (get-p 3 3))
-               (= 0 (get-p 4 4))
-               (= 1 (get-p 5 5)))
+  (let [[nx ny b2] (try-jump b +black+ 3 3 [1 1])]
+    (assert* (= 0 (get-p b2 3 3))
+             (= 0 (get-p b2 4 4))
+             (= 1 (get-p b2 5 5)))
 
-      (let [[nx ny board] (try-jump 5 5 [-1 1])]
-        (binding [*board* board]
-          (assert* (= 0 (get-p 5 5))
-                   (= 0 (get-p 4 6))
-                   (= 2 (get-p 3 7))))))))
+    (let [[nx ny b3] (try-jump b2 +black+ 5 5 [-1 1])]
+      (assert* (= 0 (get-p b3 5 5))
+               (= 0 (get-p b3 4 6))
+               (= 2 (get-p b3 3 7))))))
 
-(with-position
-  [+black+
-   [[  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  2  0  0  0  0  ]
-    [  0  0 -1  0 -1  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0 -1  0 -1  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]]]
+(let [b  [[  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  2  0  0  0  0  ]
+          [  0  0 -1  0 -1  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0 -1  0 -1  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [jumps (unwind-plays (jumps-from 3 3))]
+  (let [jumps (unwind-plays (jumps-from b +black+ 3 3))]
     (assert* (in? '([3 3] [5 5] [3 7] [1 5] [3 3]) jumps)
              (in? '([3 3] [1 5] [3 7] [5 5] [3 3]) jumps)
              (not-in? '([3 3] [5 5] [3 7] [1 5] [3 3] [5 5]) jumps)
@@ -144,125 +129,114 @@
              (not-in? '([3 3] [5 5] [3 7]) jumps)
              (not-in? '([3 3] [1 5] [3 7]) jumps)))
 
-  (let [[nx ny board] (try-jump 3 3 [1 1])]
-    (binding [*board* board]
-      (assert* (= 0 (get-p 3 3))
-               (= 0 (get-p 4 4))
-               (= 2 (get-p 5 5)))
+  (let [[nx ny b2] (try-jump b +black+ 3 3 [1 1])]
+    (assert* (= 0 (get-p b2 3 3))
+             (= 0 (get-p b2 4 4))
+             (= 2 (get-p b2 5 5)))
 
-      (let [[nx ny board] (try-jump 5 5 [-1 1])]
-        (binding [*board* board]
-          (assert* (= 0 (get-p 5 5))
-                   (= 0 (get-p 4 6))
-                   (= 2 (get-p 3 7)))
+    (let [[nx ny b3] (try-jump b2 +black+ 5 5 [-1 1])]
+      (assert* (= 0 (get-p b3 5 5))
+               (= 0 (get-p b3 4 6))
+               (= 2 (get-p b3 3 7)))
 
-          (let [[nx ny board] (try-jump 3 7 [-1 -1])]
-            (binding [*board* board]
-              (assert* (= 0 (get-p 3 7))
-                       (= 0 (get-p 2 6))
-                       (= 2 (get-p 1 5)))
+      (let [[nx ny b4] (try-jump b3 +black+ 3 7 [-1 -1])]
+        (assert* (= 0 (get-p b4 3 7))
+                 (= 0 (get-p b4 2 6))
+                 (= 2 (get-p b4 1 5)))
 
-              (let [[nx ny board] (try-jump 1 5 [1 -1])]
-                (binding [*board* board]
-                  (assert* (= 0 (get-p 1 5))
-                           (= 0 (get-p 2 4))
-                           (= 2 (get-p 3 3))))))))))))
+        (let [[nx ny b5] (try-jump b4 +black+ 1 5 [1 -1])]
+          (assert* (= 0 (get-p b5 1 5))
+                   (= 0 (get-p b5 2 4))
+                   (= 2 (get-p b5 3 3))))))))
 
 ;;; move logic
 
-(with-position
-  [+black+
-   [[  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  2  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  1  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0 -1  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]]]
+(let [b  [[  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  2  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  1  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0 -1  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]]]
 
-  (binding [*side* +black+]
-    (let [moves (unwind-plays (moves-from 2 4))]
-      (assert* (in? '([2 4] [3 5]) moves)
-               (in? '([2 4] [1 5]) moves)
-               (not-in? '([2 4] [3 3]) moves)
-               (not-in? '([2 4] [1 3]) moves))
+  (let [moves (unwind-plays (moves-from b +black+ 2 4))]
+    (assert* (in? '([2 4] [3 5]) moves)
+             (in? '([2 4] [1 5]) moves)
+             (not-in? '([2 4] [3 3]) moves)
+             (not-in? '([2 4] [1 3]) moves))
 
-      (let [[nx ny board] (try-move 2 4 [1 1])]
-        (assert (= [nx ny] [3 5]))
-        (binding [*board* board]
-          (assert* (= 0 (get-p 2 4)) (= 1 (get-p 3 5)))))
+    (let [[nx ny b2] (try-move b +black+ 2 4 [1 1])]
+      (assert* (= [nx ny] [3 5])
+               (= 0 (get-p b2 2 4))
+               (= 1 (get-p b2 3 5))))
 
-      (let [moves (unwind-plays (moves-from 4 2))]
-        (assert* (in? '([4 2] [5 3]) moves)
-                 (in? '([4 2] [3 3]) moves)
-                 (in? '([4 2] [5 1]) moves)
-                 (in? '([4 2] [3 1]) moves)))))
+    (let [moves (unwind-plays (moves-from b +black+ 4 2))]
+      (assert* (in? '([4 2] [5 3]) moves)
+               (in? '([4 2] [3 3]) moves)
+               (in? '([4 2] [5 1]) moves)
+               (in? '([4 2] [3 1]) moves))))
 
-  (binding [*side* +red+]
-    (let [moves (unwind-plays (moves-from 4 6))]
-      (assert* (in? '([4 6] [3 5]) moves)
-               (in? '([4 6] [5 5]) moves)
-               (not-in? '([4 6] [3 7]) moves)
-               (not-in? '([4 6] [3 7]) moves)))))
+  (let [moves (unwind-plays (moves-from b +red+ 4 6))]
+    (assert* (in? '([4 6] [3 5]) moves)
+             (in? '([4 6] [5 5]) moves)
+             (not-in? '([4 6] [3 7]) moves)
+             (not-in? '([4 6] [3 7]) moves))))
 
 ;; enumerators
 
-(with-position
-  [+black+
-   [[  0  0  1  0  0  0  0  0  ]
-    [  0 -1  0 -1  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  1  0  0  0  1  0  ]
-    [  0 -1  0 -1  0 -1  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]]]
+(let [b  [[  0  0  1  0  0  0  0  0  ]
+          [  0 -1  0 -1  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  1  0  0  0  1  0  ]
+          [  0 -1  0 -1  0 -1  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]]]
 
-  (assert (= (my-jumps) '(([2 0] ([4 2]) ([0 2]))
-                          ([2 4] ([4 6]) ([0 6]))
-                          ([6 4] ([4 6])))))
-  (assert (= (my-jumps) (my-plays))))
+  (assert (= (my-jumps b +black+)
+                '(([2 0] ([4 2]) ([0 2]))
+                  ([2 4] ([4 6]) ([0 6]))
+                  ([6 4] ([4 6])))))
+  (assert (= (my-jumps b +black+)
+             (my-plays b +black+))))
 
-(with-position
-  [+black+
-   [[  1  0  1  0  1  0  1  0  ]
-    [  0  1  0  1  0  1  0  1  ]
-    [  1  0  1  0  1  0  1  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0 -1  0 -1  0 -1  0 -1  ]
-    [ -1  0 -1  0 -1  0 -1  0  ]
-    [  0 -1  0 -1  0 -1  0 -1  ]]]
+(let [b  [[  1  0  1  0  1  0  1  0  ]
+          [  0  1  0  1  0  1  0  1  ]
+          [  1  0  1  0  1  0  1  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0 -1  0 -1  0 -1  0 -1  ]
+          [ -1  0 -1  0 -1  0 -1  0  ]
+          [  0 -1  0 -1  0 -1  0 -1  ]]]
 
-  (assert (= (my-moves) '(([0 2] ([1 3]))
-                          ([2 2] ([3 3]) ([1 3]))
-                          ([4 2] ([5 3]) ([3 3]))
-                          ([6 2] ([7 3]) ([5 3])))))
-  (assert (= (my-moves) (my-plays))))
+  (assert (= (my-moves b +black+)
+                '(([0 2] ([1 3]))
+                  ([2 2] ([3 3]) ([1 3]))
+                  ([4 2] ([5 3]) ([3 3]))
+                  ([6 2] ([7 3]) ([5 3])))))
+  (assert (= (my-moves b +black+) (my-plays b +black+))))
 
 ;; replaying
 
-(with-position
-  [+black+
-   [[  0  0  1  0  0  0  0  0  ]
-    [  0 -1  0 -1  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0 -1  0 -1  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0 -1  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]
-    [  0  0  0  0  0  0  0  0  ]]]
+(let [b  [[  0  0  1  0  0  0  0  0  ]
+          [  0 -1  0 -1  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0 -1  0 -1  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0 -1  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]
+          [  0  0  0  0  0  0  0  0  ]]]
 
-  (binding [*board* (do-plays '([2 0] [4 2] [6 4] [4 6]))]
-    (assert (= *board* [[  0  0  0  0  0  0  0  0  ]
-                        [  0 -1  0  0  0  0  0  0  ]
-                        [  0  0  0  0  0  0  0  0  ]
-                        [  0  0  0 -1  0  0  0  0  ]
-                        [  0  0  0  0  0  0  0  0  ]
-                        [  0  0  0  0  0  0  0  0  ]
-                        [  0  0  0  0  1  0  0  0  ]
-                        [  0  0  0  0  0  0  0  0  ]]))))
+  (let [b2 (do-plays b +black+ '([2 0] [4 2] [6 4] [4 6]))]
+    (assert (= b2  [[  0  0  0  0  0  0  0  0  ]
+                    [  0 -1  0  0  0  0  0  0  ]
+                    [  0  0  0  0  0  0  0  0  ]
+                    [  0  0  0 -1  0  0  0  0  ]
+                    [  0  0  0  0  0  0  0  0  ]
+                    [  0  0  0  0  0  0  0  0  ]
+                    [  0  0  0  0  1  0  0  0  ]
+                    [  0  0  0  0  0  0  0  0  ]]))))
 
 ;; unwinding
 
