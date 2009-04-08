@@ -21,17 +21,17 @@
 
   ;;; basic get/set tests
 
-  (assert* (==  0 (get-p b 0 0))
-           (==  1 (get-p b 2 0))
-           (== -1 (get-p b 1 1)))
+  (assert* (=  0 (get-p b 0 0))
+           (=  1 (get-p b 2 0))
+           (= -1 (get-p b 1 1)))
 
   (let [b2 (set-p b 0 0 2)]
-    (assert (== 2 (get-p b2 0 0))))
+    (assert (= 2 (get-p b2 0 0))))
 
   (let [b2 (set-p* b [4 0 1] [5 1 -1] [6 2 0])]
-    (assert* (==  1 (get-p b2 4 0))
-             (== -1 (get-p b2 5 1))
-             (==  0 (get-p b2 6 2))))
+    (assert* (=  1 (get-p b2 4 0))
+             (= -1 (get-p b2 5 1))
+             (=  0 (get-p b2 6 2))))
 
   ;;; square enumerations
 
