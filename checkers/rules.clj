@@ -80,7 +80,7 @@
       [dx dy])))
 
 (defn do-jump
-  [b s [x y] [nx ny]]
+  [b s x y nx ny]
   (if (and (< -1  x +size+)
            (< -1  y +size+)
            (< -1 nx +size+)
@@ -95,17 +95,17 @@
         (set-p* b [x y 0] [mx my 0] [nx ny (promote nx ny p)])))))
 
 (defn try-jump
-  [b s x y [dx dy]]
+  [b s x y dx dy]
   (let [nx (+ x dx dx)
         ny (+ y dy dy)
-        b (do-jump b s [x y] [nx ny])]
+        b (do-jump b s x y nx ny)]
     (if b [nx ny b])))
 
 (defn collect-jumps
   [b s x y p]
   (remove nil?
-    (for [dir (directions s p)]
-      (let [[nx ny b] (try-jump b s x y dir)]
+    (for [[dx dy] (directions s p)]
+      (let [[nx ny b] (try-jump b s x y dx dy)]
         (if b
           (let [more (seq (collect-jumps b s nx ny p))]
             (cons [nx ny] more)))))))
@@ -122,7 +122,7 @@
       (jumps-from b s x y))))
 
 (defn do-move
-  [b s [x y] [nx ny]]
+  [b s x y nx ny]
   (if (and (< -1  x +size+)
            (< -1  y +size+)
            (< -1 nx +size+)
@@ -134,17 +134,17 @@
         (set-p* b [x y 0] [nx ny (promote nx ny p)])))))
 
 (defn try-move
-  [b s x y [dx dy]]
+  [b s x y dx dy]
   (let [nx (+ x dx)
         ny (+ y dy)
-        b (do-move b s [x y] [nx ny])]
+        b (do-move b s x y nx ny)]
     (if b [nx ny b])))
 
 (defn collect-moves
   [b s x y p]
   (remove nil?
-    (for [dir (directions s p)]
-      (let [[nx ny b] (try-move b s x y dir)]
+    (for [[dx dy] (directions s p)]
+      (let [[nx ny b] (try-move b s x y dx dy)]
         (if b (list [nx ny]))))))
 
 (defn moves-from
@@ -159,18 +159,18 @@
       (moves-from b s x y))))
 
 (defn do-play
-  [b s [x y :as from] [nx ny :as to]]
+  [b s x y nx ny]
   (let [diff (Math/abs (- nx x))]
     (if (= 2 diff)
-      (do-jump b s from to)
-      (do-move b s from to))))
+      (do-jump b s x y nx ny)
+      (do-move b s x y nx ny))))
 
 (defn do-plays
-  [b s [from & [to :as more]]]
-  (if more
-    (let [b (do-play b s from to)]
-      (do-plays b s more))
-    b))
+  [b s [x y nx ny & more]]
+  (let [b (do-play b s x y nx ny)]
+    (if more
+      (recur b s (concat [nx ny] more))
+      b)))
 
 (defn my-plays
   [b s]

@@ -76,7 +76,7 @@
              (not-in? '([2 0] [4 2]) jumps)
              (not-in? '([2 0] [4 2] [6 4]) jumps)))
 
-  (let [[nx ny b2] (try-jump b +black+ 2 0 [-1 1])]
+  (let [[nx ny b2] (try-jump b +black+ 2 0 -1 1)]
     (assert* (= [nx ny] [0 2])
              (= 0 (get-p b2 2 0))
              (= 0 (get-p b2 1 1))
@@ -101,12 +101,12 @@
              (not-in? '([3 3] [1 5] [3 7] [5 5]) jumps)
              (not-in? '([3 3] [1 5] [3 7] [5 5] [3 3]) jumps)))
 
-  (let [[nx ny b2] (try-jump b +black+ 3 3 [1 1])]
+  (let [[nx ny b2] (try-jump b +black+ 3 3 1 1)]
     (assert* (= 0 (get-p b2 3 3))
              (= 0 (get-p b2 4 4))
              (= 1 (get-p b2 5 5)))
 
-    (let [[nx ny b3] (try-jump b2 +black+ 5 5 [-1 1])]
+    (let [[nx ny b3] (try-jump b2 +black+ 5 5 -1 1)]
       (assert* (= 0 (get-p b3 5 5))
                (= 0 (get-p b3 4 6))
                (= 2 (get-p b3 3 7))))))
@@ -129,22 +129,22 @@
              (not-in? '([3 3] [5 5] [3 7]) jumps)
              (not-in? '([3 3] [1 5] [3 7]) jumps)))
 
-  (let [[nx ny b2] (try-jump b +black+ 3 3 [1 1])]
+  (let [[nx ny b2] (try-jump b +black+ 3 3 1 1)]
     (assert* (= 0 (get-p b2 3 3))
              (= 0 (get-p b2 4 4))
              (= 2 (get-p b2 5 5)))
 
-    (let [[nx ny b3] (try-jump b2 +black+ 5 5 [-1 1])]
+    (let [[nx ny b3] (try-jump b2 +black+ 5 5 -1 1)]
       (assert* (= 0 (get-p b3 5 5))
                (= 0 (get-p b3 4 6))
                (= 2 (get-p b3 3 7)))
 
-      (let [[nx ny b4] (try-jump b3 +black+ 3 7 [-1 -1])]
+      (let [[nx ny b4] (try-jump b3 +black+ 3 7 -1 -1)]
         (assert* (= 0 (get-p b4 3 7))
                  (= 0 (get-p b4 2 6))
                  (= 2 (get-p b4 1 5)))
 
-        (let [[nx ny b5] (try-jump b4 +black+ 1 5 [1 -1])]
+        (let [[nx ny b5] (try-jump b4 +black+ 1 5 1 -1)]
           (assert* (= 0 (get-p b5 1 5))
                    (= 0 (get-p b5 2 4))
                    (= 2 (get-p b5 3 3))))))))
@@ -166,7 +166,7 @@
              (not-in? '([2 4] [3 3]) moves)
              (not-in? '([2 4] [1 3]) moves))
 
-    (let [[nx ny b2] (try-move b +black+ 2 4 [1 1])]
+    (let [[nx ny b2] (try-move b +black+ 2 4 1 1)]
       (assert* (= [nx ny] [3 5])
                (= 0 (get-p b2 2 4))
                (= 1 (get-p b2 3 5)))))
@@ -228,7 +228,7 @@
           [  0  0  0  0  0  0  0  0  ]
           [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [b2 (do-plays b +black+ '([2 0] [4 2] [6 4] [4 6]))]
+  (let [b2 (do-plays b +black+ [2 0 4 2 6 4 4 6])]
     (assert (= b2  [[  0  0  0  0  0  0  0  0  ]
                     [  0 -1  0  0  0  0  0  0  ]
                     [  0  0  0  0  0  0  0  0  ]

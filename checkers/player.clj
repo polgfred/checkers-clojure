@@ -60,16 +60,16 @@
               (if (< (first p1) (first p2)) p1 p2)))))))
 
 (defn best-play-from
-  [b s play [from & more]]
+  [b s play [[x y] & more]]
   (if (empty? more)
     (let [play  (reverse play)
           score (calculate-score-recursive b s)]
       [score play])
     (reduce (compare-plays-fn s)
       (for [tree more]
-        (let [to (first tree)
-              b  (do-play b s from to)]
-          (best-play-from b s (cons to play) tree))))))
+        (let [[nx ny] (first tree)
+              b  (do-play b s x y nx ny)]
+          (best-play-from b s (cons [nx ny] play) tree))))))
 
 (defn best-play
   [b s]
