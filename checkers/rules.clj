@@ -9,21 +9,6 @@
 
 (defstruct Game :side :board)
 
-; (def *board*)     ;; set root bindings to manage
-; (def *side*)      ;; a single game globally
-; 
-; (defmacro with-board
-;   [[board] & exprs]
-;   `(binding [*board* ~board] ~@exprs))
-; 
-; (defmacro with-position
-;   [[side board] & exprs]
-;   `(binding [*side* ~side *board* ~board] ~@exprs))
-; 
-; (defmacro switch-sides
-;   [& exprs]
-;   `(binding [*side* (- *side*)] ~@exprs))
-
 (let [chr-s {0 ". " 1 "b " 2 "B " -1 "r " -2 "R "}
       num-s (partial format "%d ")]
   (defn dump-board
