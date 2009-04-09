@@ -90,7 +90,9 @@
           my (avg y ny)]
       (if (and (opp? s (get-p b mx my))
                (open? (get-p b nx ny)))
-        (set-p* b [x y 0] [mx my 0] [nx ny (promote nx ny p)])))))
+        (set-p* b [x y 0]
+                  [mx my 0]
+                  [nx ny (promote nx ny p)])))))
 
 (defn try-jump
   [b s x y dx dy]
@@ -103,15 +105,14 @@
   [b s x y p]
   (remove nil?
     (for [[dx dy] (directions s p)]
-      (let [[nx ny b] (try-jump b s x y dx dy)]
-        (if b
-          (let [more (seq (collect-jumps b s nx ny p))]
-            (cons [nx ny] more)))))))
+      (if-let [[nx ny b] (try-jump b s x y dx dy)]
+        (let [more (seq (collect-jumps b s nx ny p))]
+          (conj more ny nx))))))
 
 (defn jumps-from
   [b s x y]
   (if-let [more (seq (collect-jumps b s x y (get-p b x y)))]
-    (cons [x y] more)))
+    (conj more y x)))
 
 (defn my-jumps
   [b s]
@@ -129,7 +130,8 @@
            (=  1 (Math/abs (- ny y))))
     (let [p (get-p b x y)]
       (if (open? (get-p b nx ny))
-        (set-p* b [x y 0] [nx ny (promote nx ny p)])))))
+        (set-p* b [x y 0]
+                  [nx ny (promote nx ny p)])))))
 
 (defn try-move
   [b s x y dx dy]
@@ -142,13 +144,13 @@
   [b s x y p]
   (remove nil?
     (for [[dx dy] (directions s p)]
-      (let [[nx ny b] (try-move b s x y dx dy)]
-        (if b (list [nx ny]))))))
+      (if-let [[nx ny b] (try-move b s x y dx dy)]
+        (list nx ny)))))
 
 (defn moves-from
   [b s x y]
   (if-let [more (seq (collect-moves b s x y (get-p b x y)))]
-    (cons [x y] more)))
+    (conj more y x)))
 
 (defn my-moves
   [b s]
@@ -164,10 +166,10 @@
       (do-move b s x y nx ny))))
 
 (defn do-plays
-  [b s [[x y :as xy] [nx ny :as nxy] & more]]
+  [b s [x y nx ny & more]]
   (let [b (do-play b s x y nx ny)]
     (if more
-      (recur b s (cons nxy more))
+      (recur b s (conj more ny nx))
       b)))
 
 (defn my-plays
@@ -175,14 +177,14 @@
   (let [jumps (my-jumps b s)]
     (if (seq jumps) jumps (my-moves b s))))
 
-(defn unwind-plays
-  [[this & more :as tree]]
+(defn unwind
+  [[x y & more :as tree]]
   (if more
     (reduce concat
       (for [m more]
-        (map #(cons this %) (unwind-plays m))))
+        (map #(conj % y x) (unwind m))))
     (list tree)))
 
 (defn unwind-all
   [plays]
-  (reduce concat (map unwind-plays plays)))
+  (reduce concat (map unwind plays)))

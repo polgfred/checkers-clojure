@@ -69,12 +69,12 @@
           [  0  0  0  0  0  0  0  0  ]
           [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [jumps (unwind-plays (jumps-from b +black+ 2 0))]
-    (assert* (in? '([2 0] [0 2]) jumps)
-             (in? '([2 0] [4 2] [2 4]) jumps)
-             (in? '([2 0] [4 2] [6 4] [4 6]) jumps)
-             (not-in? '([2 0] [4 2]) jumps)
-             (not-in? '([2 0] [4 2] [6 4]) jumps)))
+  (let [jumps (unwind (jumps-from b +black+ 2 0))]
+    (assert* (in? '(2 0 0 2) jumps)
+             (in? '(2 0 4 2 2 4) jumps)
+             (in? '(2 0 4 2 6 4 4 6) jumps)
+             (not-in? '(2 0 4 2) jumps)
+             (not-in? '(2 0 4 2 6 4) jumps)))
 
   (let [[nx ny b2] (try-jump b +black+ 2 0 -1 1)]
     (assert* (= [nx ny] [0 2])
@@ -91,15 +91,15 @@
           [  0  0 -1  0 -1  0  0  0  ]
           [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [jumps (unwind-plays (jumps-from b +black+ 3 3))]
-    (assert* (in? '([3 3] [5 5] [3 7]) jumps)
-             (in? '([3 3] [1 5] [3 7]) jumps)
-             (not-in? '([3 3] [5 5]) jumps)
-             (not-in? '([3 3] [1 5]) jumps)
-             (not-in? '([3 3] [5 5] [3 7] [1 5]) jumps)
-             (not-in? '([3 3] [5 5] [3 7] [1 5] [3 3]) jumps)
-             (not-in? '([3 3] [1 5] [3 7] [5 5]) jumps)
-             (not-in? '([3 3] [1 5] [3 7] [5 5] [3 3]) jumps)))
+  (let [jumps (unwind (jumps-from b +black+ 3 3))]
+    (assert* (in? '(3 3 5 5 3 7) jumps)
+             (in? '(3 3 1 5 3 7) jumps)
+             (not-in? '(3 3 5 5) jumps)
+             (not-in? '(3 3 1 5) jumps)
+             (not-in? '(3 3 5 5 3 7 1 5) jumps)
+             (not-in? '(3 3 5 5 3 7 1 5 3 3) jumps)
+             (not-in? '(3 3 1 5 3 7 5 5) jumps)
+             (not-in? '(3 3 1 5 3 7 5 5 3 3) jumps)))
 
   (let [[nx ny b2] (try-jump b +black+ 3 3 1 1)]
     (assert* (= 0 (get-p b2 3 3))
@@ -120,14 +120,14 @@
           [  0  0 -1  0 -1  0  0  0  ]
           [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [jumps (unwind-plays (jumps-from b +black+ 3 3))]
-    (assert* (in? '([3 3] [5 5] [3 7] [1 5] [3 3]) jumps)
-             (in? '([3 3] [1 5] [3 7] [5 5] [3 3]) jumps)
-             (not-in? '([3 3] [5 5] [3 7] [1 5] [3 3] [5 5]) jumps)
-             (not-in? '([3 3] [5 5]) jumps)
-             (not-in? '([3 3] [1 5]) jumps)
-             (not-in? '([3 3] [5 5] [3 7]) jumps)
-             (not-in? '([3 3] [1 5] [3 7]) jumps)))
+  (let [jumps (unwind (jumps-from b +black+ 3 3))]
+    (assert* (in? '(3 3 5 5 3 7 1 5 3 3) jumps)
+             (in? '(3 3 1 5 3 7 5 5 3 3) jumps)
+             (not-in? '(3 3 5 5 3 7 1 5 3 3 5 5) jumps)
+             (not-in? '(3 3 5 5) jumps)
+             (not-in? '(3 3 1 5) jumps)
+             (not-in? '(3 3 5 5 3 7) jumps)
+             (not-in? '(3 3 1 5 3 7) jumps)))
 
   (let [[nx ny b2] (try-jump b +black+ 3 3 1 1)]
     (assert* (= 0 (get-p b2 3 3))
@@ -160,28 +160,28 @@
           [  0  0  0  0 -1  0  0  0  ]
           [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [moves (unwind-plays (moves-from b +black+ 2 4))]
-    (assert* (in? '([2 4] [3 5]) moves)
-             (in? '([2 4] [1 5]) moves)
-             (not-in? '([2 4] [3 3]) moves)
-             (not-in? '([2 4] [1 3]) moves))
+  (let [moves (unwind (moves-from b +black+ 2 4))]
+    (assert* (in? '(2 4 3 5) moves)
+             (in? '(2 4 1 5) moves)
+             (not-in? '(2 4 3 3) moves)
+             (not-in? '(2 4 1 3) moves))
 
     (let [[nx ny b2] (try-move b +black+ 2 4 1 1)]
       (assert* (= [nx ny] [3 5])
                (= 0 (get-p b2 2 4))
                (= 1 (get-p b2 3 5)))))
 
-  (let [moves (unwind-plays (moves-from b +black+ 4 2))]
-    (assert* (in? '([4 2] [5 3]) moves)
-             (in? '([4 2] [3 3]) moves)
-             (in? '([4 2] [5 1]) moves)
-             (in? '([4 2] [3 1]) moves)))
+  (let [moves (unwind (moves-from b +black+ 4 2))]
+    (assert* (in? '(4 2 5 3) moves)
+             (in? '(4 2 3 3) moves)
+             (in? '(4 2 5 1) moves)
+             (in? '(4 2 3 1) moves)))
 
-  (let [moves (unwind-plays (moves-from b +red+ 4 6))]
-    (assert* (in? '([4 6] [3 5]) moves)
-             (in? '([4 6] [5 5]) moves)
-             (not-in? '([4 6] [3 7]) moves)
-             (not-in? '([4 6] [3 7]) moves))))
+  (let [moves (unwind (moves-from b +red+ 4 6))]
+    (assert* (in? '(4 6 3 5) moves)
+             (in? '(4 6 5 5) moves)
+             (not-in? '(4 6 3 7) moves)
+             (not-in? '(4 6 3 7) moves))))
 
 ;; enumerators
 
@@ -195,9 +195,7 @@
           [  0  0  0  0  0  0  0  0  ]]]
 
   (assert (= (my-jumps b +black+)
-                '(([2 0] ([4 2]) ([0 2]))
-                  ([2 4] ([4 6]) ([0 6]))
-                  ([6 4] ([4 6])))))
+             '((2 0 (4 2) (0 2)) (2 4 (4 6) (0 6)) (6 4 (4 6)))))
   (assert (= (my-jumps b +black+)
              (my-plays b +black+))))
 
@@ -211,11 +209,9 @@
           [  0 -1  0 -1  0 -1  0 -1  ]]]
 
   (assert (= (my-moves b +black+)
-                '(([0 2] ([1 3]))
-                  ([2 2] ([3 3]) ([1 3]))
-                  ([4 2] ([5 3]) ([3 3]))
-                  ([6 2] ([7 3]) ([5 3])))))
-  (assert (= (my-moves b +black+) (my-plays b +black+))))
+             '((0 2 (1 3)) (2 2 (3 3) (1 3)) (4 2 (5 3) (3 3)) (6 2 (7 3) (5 3)))))
+  (assert (= (my-moves b +black+)
+             (my-plays b +black+))))
 
 ;; replaying
 
@@ -228,7 +224,7 @@
           [  0  0  0  0  0  0  0  0  ]
           [  0  0  0  0  0  0  0  0  ]]]
 
-  (let [b2 (do-plays b +black+ [[2 0] [4 2] [6 4] [4 6]])]
+  (let [b2 (do-plays b +black+ [2 0 4 2 6 4 4 6])]
     (assert (= b2  [[  0  0  0  0  0  0  0  0  ]
                     [  0 -1  0  0  0  0  0  0  ]
                     [  0  0  0  0  0  0  0  0  ]
@@ -245,9 +241,9 @@
   (assert (= unwound (unwind-all wound))))
 
 (assert-unwound
-  '(([0 2] ([1 3])) ([2 2] ([3 3]) ([1 3])))
-  '(([0 2] [1 3]) ([2 2] [3 3]) ([2 2] [1 3])))
+  '((0 2 (1 3)) (2 2 (3 3) (1 3)))
+  '((0 2 1 3) (2 2 3 3) (2 2 1 3)))
 
 (assert-unwound
-  '(([2 0] ([4 2]) ([0 2])) ([2 4] ([4 6]) ([0 6])) ([6 4] ([4 6])))
-  '(([2 0] [4 2]) ([2 0] [0 2]) ([2 4] [4 6]) ([2 4] [0 6]) ([6 4] [4 6])))
+  '((2 0 (4 2) (0 2)) (2 4 (4 6) (0 6)) (6 4 (4 6)))
+  '((2 0 4 2) (2 0 0 2) (2 4 4 6) (2 4 0 6) (6 4 4 6)))
