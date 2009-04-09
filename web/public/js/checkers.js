@@ -141,7 +141,9 @@ dojo.declare('Game', null, {
     // helper
     var playMap = {};
     dojo.forEach(plays, function(play) {
-      playMap[play[0]] = (play.length == 1 ? true : this._playsToMap(play.slice(1)));
+      playMap[play[0] + ',' + play[1]] = (play.length == 2 ?
+        true :
+        this._playsToMap(play.slice(2)));
     }, this);
     return playMap;
   }
