@@ -55,16 +55,16 @@
               (first (sort-by first < plays))))))))
 
 (defn best-play-from
-  [b s v play [[x y] & more]]
+  [b s v play [x y & more]]
   (if (empty? more)
     (let [play (reverse play)
           score (calculate-score-recursive b s v)]
       [score play])
     (reduce (compare-plays-fn s)
       (for [tree more]
-        (let [[nx ny :as nxy] (first tree)
+        (let [[nx ny] tree
               b (do-play b s x y nx ny)]
-          (best-play-from b s v (cons nxy play) tree))))))
+          (best-play-from b s v (conj play nx ny) tree))))))
 
 (defn best-play
   ([b s] (best-play b s *search-depth*))
@@ -72,5 +72,5 @@
     (let [plays (my-plays b s)]
       (reduce (compare-plays-fn s)
         (for [tree plays]
-          (let [[x y :as xy] (first tree)]
-            (best-play-from b s v (list xy) tree)))))))
+          (let [[x y] tree]
+            (best-play-from b s v (conj () x y) tree)))))))
