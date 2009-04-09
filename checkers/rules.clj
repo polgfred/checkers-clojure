@@ -164,10 +164,10 @@
       (do-move b s x y nx ny))))
 
 (defn do-plays
-  [b s [x y nx ny & more]]
+  [b s [[x y :as xy] [nx ny :as nxy] & more]]
   (let [b (do-play b s x y nx ny)]
     (if more
-      (recur b s (concat [nx ny] more))
+      (recur b s (cons nxy more))
       b)))
 
 (defn my-plays
