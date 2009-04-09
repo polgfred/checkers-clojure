@@ -4,12 +4,6 @@
   (:use checkers.rules)
   (:use checkers.player))
 
-(defmacro with-session-position
-  [[session] & exprs]
-  `(let [~'side (~session :side) ~'board (~session :board)]
-    (with-position [~'side ~'board]
-      ~@exprs)))
-
 (def +new-board+ [[  1  0  1  0  1  0  1  0  ]
                   [  0  1  0  1  0  1  0  1  ]
                   [  1  0  1  0  1  0  1  0  ]
@@ -22,24 +16,29 @@
 (defn game-new
   [session]
   (println "in game-new:")
-  (with-position [+black+ +new-board+]
-    (println "new game")
-    (println (dump-board *board*))
-    (write-session (assoc session :side *side* :board *board*))
-    (json {:side *side* :board *board* :plays (my-plays)})))
+  (println "new game")
+
+  (let [b +new-board+ s +black+]
+    (println (dump-board b))
+
+    (write-session (assoc session :side s :board b))
+    (json {:board b :side s :plays (my-plays b s)})))
 
 (defn game-play
   [session move]
   (println "in game-play:")
-  (with-session-position [session]
-    (let [board (do-plays move)]
-      (println "your move")
-      (println (dump-board board))
-      (with-position [(- side) board]
-        (let [move (second (best-play))
-              board (do-plays move)]
-          (println "my move")
-          (println (dump-board board))
-          (with-position [side board]
-            (write-session (assoc session :board board))
-            (json {:side side :board board :plays (my-plays)})))))))
+
+  (let [b (session :board) s (session :side)]
+    (println (dump-board b))
+
+    (let [bx (do-plays b s move) sx (- s)]
+      (println "your move =>" (seq move))
+      (println (dump-board bx))
+
+      (let [[_ mx] (best-play bx sx)
+            bxx (do-plays bx sx mx)]
+        (println "my move =>" mx)
+        (println (dump-board bxx))
+
+        (write-session (assoc session :board bxx))
+        (json {:board bxx :side s :plays (my-plays bxx s)})))))
