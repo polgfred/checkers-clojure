@@ -1,5 +1,8 @@
-// the global game object - will be defined by addOnLoad
+// the global game object
 var game;
+dojo.addOnLoad(function() {
+  game = new Game();
+});
 
 dojo.require('dojo.dnd.Source');
 dojo.declare('SquareSource', dojo.dnd.Source, {
@@ -17,6 +20,9 @@ dojo.declare('SquareSource', dojo.dnd.Source, {
   checkAcceptance: function(source) {
     // whether the drop is a valid move
     return game.isPlay(source.x, source.y, this.x, this.y);
+  },
+  onDrop: function() {
+    // don't try to move stuff around, let the game do it
   }
 });
 
@@ -54,21 +60,20 @@ dojo.declare('Game', null, {
       }
     }
   },
-  _getImg: function(x, y) {
-    var tr = dojo.query('#board tr')[7 - y];
-    var td = dojo.query('> td', tr)[x];
-    return dojo.query('> img', td)[0];
-  },
-  _setImg: function(x, y, p) {
+  _moveImg: function(x, y, nx, ny, p) {
     var tr  = dojo.query('#board tr')[7 - y];
     var td  = dojo.query('> td', tr)[x];
     var img = dojo.query('> img', td)[0];
-    if (p == 0) {
-      if (img) dojo.destroy(img);
-    } else {
-      if (!img) img = dojo.create('img', {'class': 'dojoDndItem'}, td);
-      img.src = '/s/images/' + this._pieceImages[p];
-    }
+    var ntr = dojo.query('#board tr')[7 - ny];
+    var ntd = dojo.query('> td', ntr)[nx];
+    dojo.place(img, ntd);
+    if (p) img.src = '/s/images/' + this._pieceImages[p];
+  },
+  _removeImg: function(x, y) {
+    var tr  = dojo.query('#board tr')[7 - y];
+    var td  = dojo.query('> td', tr)[x];
+    var img = dojo.query('> img', td)[0];
+    dojo.destroy(img);
   },
   constructor: function() {
     // get a new game from the server
@@ -93,7 +98,7 @@ dojo.declare('Game', null, {
     // just in case, we'll check again
     var playMap = this.isPlay(x, y, nx, ny);
     if (!playMap) return;
-    this.movePiece(x, y, nx, ny, true);
+    this.movePiece(x, y, nx, ny);
     // keep track of this move
     if (this._plays.length == 0) {
       this._plays.push(x);
@@ -111,23 +116,24 @@ dojo.declare('Game', null, {
       this._playMap[nx + ',' + ny] = playMap;
     }
   },
-  movePiece: function(x, y, nx, ny, dropped) {
+  promoted: function(ny, p) {
+    if (p ==  1 && ny == 7) return  2;
+    if (p == -1 && ny == 0) return -2;
+    return p;
+  },
+  movePiece: function(x, y, nx, ny) {
     // move the piece
-    var p = this._board[y][x];
+    var p = this.promoted(ny, this._board[y][x]);
     this._board[y][x] = 0;
     this._board[ny][nx] = p;
-    if (!dropped) {
-      this._setImg(x, y, 0);
-      this._setImg(nx, ny, p);
-    }
+    this._moveImg(x, y, nx, ny, p);
     if (Math.abs(nx - x) == 2) {
       // remove the jumped piece
       var mx = (x + nx) / 2;
       var my = (y + ny) / 2
       this._board[my][mx] = 0;
-      this._setImg(mx, my, 0);
+      this._removeImg(mx, my);
     }
-    // TODO: promote piece
   },
   moveAll: function(move) {
     this.movePiece(move[0], move[1], move[2], move[3]);
@@ -171,8 +177,4 @@ dojo.declare('Game', null, {
     }, this);
     return playMap;
   }
-});
-
-dojo.addOnLoad(function() {
-  game = new Game();
 });
