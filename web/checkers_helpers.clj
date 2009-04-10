@@ -41,4 +41,4 @@
         (println (dump-board bxx))
 
         (write-session (assoc session :board bxx))
-        (json {:board bxx :side s :plays (my-plays bxx s)})))))
+        (json {:board bxx :side s :move mx :plays (my-plays bxx s)})))))
