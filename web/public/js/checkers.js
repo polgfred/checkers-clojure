@@ -5,9 +5,10 @@ dojo.require('dojo.dnd.Source');
 dojo.declare('SquareSource', dojo.dnd.Source, {
   singular: true, // don't allow multiple selection regardless of key state
   autoSync: true, // always sync up node list with square contents
-  constructor: function(node, params) {
+  constructor: function(node, x, y) {
     // keep track of the coords for this square
-    this._coords = params.coords;
+    this.x = x;
+    this.y = y;
   },
   copyState: function() {
     // never allow pieces to be copied
@@ -15,7 +16,7 @@ dojo.declare('SquareSource', dojo.dnd.Source, {
   },
   checkAcceptance: function(source) {
     // whether the drop is a valid move
-    return game.isPlay(source._coords, this._coords);
+    return game.isPlay(source.x, source.y, this.x, this.y);
   }
 });
 
@@ -39,14 +40,13 @@ dojo.declare('Game', null, {
           // create playable square
           var td = dojo.create('td', {'class': 'on'}, tr);
           var p = this._board[y][x];
-          if (p != 0)
+          if (p != 0) {
             // create image tag for piece
-            dojo.create('img', {
-              src: '/s/images/' + this._pieceImages[p],
-              'class': 'dojoDndItem'
-            }, td);
+            var img = dojo.create('img', {'class': 'dojoDndItem'}, td);
+            img.src = '/s/images/' + this._pieceImages[p];
+          }
           // create the drag/drop source
-          new SquareSource(td, {coords: [x, y]});
+          new SquareSource(td, x, y);
         } else {
           // create non-playable square
           dojo.create('td', {'class': 'off'}, tr);
@@ -57,8 +57,18 @@ dojo.declare('Game', null, {
   _getImg: function(x, y) {
     var tr = dojo.query('#board tr')[7 - y];
     var td = dojo.query('> td', tr)[x];
-    var nodes = dojo.query('> img', td);
-    if (nodes.length > 0) return nodes[0];
+    return dojo.query('> img', td)[0];
+  },
+  _setImg: function(x, y, p) {
+    var tr  = dojo.query('#board tr')[7 - y];
+    var td  = dojo.query('> td', tr)[x];
+    var img = dojo.query('> img', td)[0];
+    if (p == 0) {
+      if (img) dojo.destroy(img);
+    } else {
+      if (!img) img = dojo.create('img', {'class': 'dojoDndItem'}, td);
+      img.src = '/s/images/' + this._pieceImages[p];
+    }
   },
   constructor: function() {
     // get a new game from the server
@@ -69,7 +79,6 @@ dojo.declare('Game', null, {
         // set up the game attributes
         this._side = res.side;
         this._board = res.board;
-        this._plays = [];
         this._setupBoard();
         this.updatePlayMap(res.plays);
       })
@@ -77,32 +86,21 @@ dojo.declare('Game', null, {
     // listen for drops
     dojo.subscribe('/dnd/drop', this, function(source) {
       var target = dojo.dnd.manager().target;
-      this.doPlay(source._coords, target._coords);
+      this.handleDrop(source.x, source.y, target.x, target.y);
     });
   },
-  doPlay: function(from, to) {
+  handleDrop: function(x, y, nx, ny) {
     // just in case, we'll check again
-    var playMap = this.isPlay(from, to);
+    var playMap = this.isPlay(x, y, nx, ny);
     if (!playMap) return;
+    this.movePiece(x, y, nx, ny, true);
     // keep track of this move
-    if (this._plays.length == 0)
-      this._plays.push(from);
-    this._plays.push(to);
-    // move the piece
-    var x  = from[0];
-    var y  = from[1];
-    var nx = to[0];
-    var ny = to[1];
-    var p  = this._board[y][x];
-    this._board[y][x] = 0;
-    this._board[ny][nx] = p;
-    if (Math.abs(nx - x) == 2) {
-      // remove the jumped piece
-      var mx = (x + nx) / 2;
-      var my = (y + ny) / 2
-      this._board[my][mx] = 0;
-      dojo.destroy(this._getImg(mx, my));
+    if (this._plays.length == 0) {
+      this._plays.push(x);
+      this._plays.push(y);
     }
+    this._plays.push(nx);
+    this._plays.push(ny);
     // see if any plays remain
     this._playMap = {};
     if (playMap == true) {
@@ -110,13 +108,32 @@ dojo.declare('Game', null, {
       this.onPlayComplete();
     } else if (playMap) {
       // still your move
-      this._playMap[to] = playMap;
+      this._playMap[nx + ',' + ny] = playMap;
     }
   },
-  isPlay: function(from, to) {
-    // whether this is a valid move
-    var fromMap = this._playMap[from];
-    if (fromMap) return fromMap[to];
+  movePiece: function(x, y, nx, ny, dropped) {
+    // move the piece
+    var p = this._board[y][x];
+    this._board[y][x] = 0;
+    this._board[ny][nx] = p;
+    if (!dropped) {
+      this._setImg(x, y, 0);
+      this._setImg(nx, ny, p);
+    }
+    if (Math.abs(nx - x) == 2) {
+      // remove the jumped piece
+      var mx = (x + nx) / 2;
+      var my = (y + ny) / 2
+      this._board[my][mx] = 0;
+      this._setImg(mx, my, 0);
+    }
+    // TODO: promote piece
+  },
+  moveAll: function(move) {
+    this.movePiece(move[0], move[1], move[2], move[3]);
+    if (move.length > 4) {
+      this.moveAll(move.slice(2));
+    }
   },
   onPlayComplete: function() {
     // get next move from the server
@@ -125,9 +142,15 @@ dojo.declare('Game', null, {
       handleAs: 'json',
       content: {move: dojo.toJson(this._plays)},
       load: dojo.hitch(this, function(res) {
-        console.log(res);
+        this.moveAll(res.move);
+        this.updatePlayMap(res.plays);
       })
     });
+  },
+  isPlay: function(x, y, nx, ny) {
+    // whether this is a valid move
+    var fromMap = this._playMap[x + ',' + y];
+    if (fromMap) return fromMap[nx + ',' + ny];
   },
   updatePlayMap: function(plays) {
     // _playMap is a mapping over the tree of legal moves:
@@ -136,6 +159,7 @@ dojo.declare('Game', null, {
     // - a terminal move yields true
     // - a partial move yields a mapping over the remaining moves
     this._playMap = this._playsToMap(plays);
+    this._plays = [];
   },
   _playsToMap: function(plays) {
     // helper
