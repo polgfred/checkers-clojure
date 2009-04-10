@@ -21,8 +21,9 @@ dojo.declare('SquareSource', dojo.dnd.Source, {
     // whether the drop is a valid move
     return game.isPlay(source.x, source.y, this.x, this.y);
   },
-  onDrop: function() {
-    // don't try to move stuff around, let the game do it
+  onDrop: function(source) {
+    // let the game do it
+    game.handleDrop(source.x, source.y, this.x, this.y);
   }
 });
 
@@ -87,11 +88,6 @@ dojo.declare('Game', null, {
         this._setupBoard();
         this.updatePlayMap(res.plays);
       })
-    });
-    // listen for drops
-    dojo.subscribe('/dnd/drop', this, function(source) {
-      var target = dojo.dnd.manager().target;
-      this.handleDrop(source.x, source.y, target.x, target.y);
     });
   },
   handleDrop: function(x, y, nx, ny) {
