@@ -284,4 +284,4 @@
 (defn unwind-all
   "Unwinds a list of jump or move trees into a single list of plays."
   [plays]
-  (reduce concat (map unwind plays)))
+  (mapcat unwind plays))
