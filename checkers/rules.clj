@@ -32,11 +32,11 @@
 
 (defn get-p
   "Given board `b', the value of the piece at (x,y)."
-  [b x y] ((b y) x))
+  [b x y] (get-in b [y x]))
 
 (defn set-p
   "Given board `b', a new board after setting (x,y) => p."
-  [b x y p] (assoc b y (assoc (b y) x p)))
+  [b x y p] (assoc-in b [y x] p))
 
 (defn set-ps
   "Chains calls to set-p in order to set multiple piece values at once.
