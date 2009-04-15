@@ -27,16 +27,16 @@
     (reduce str
       (concat
         (for [y (reverse (range +size+))]
-          (str (num-s y) (reduce str (map chr-s (get b y))) "\n"))
+          (str (num-s y) (reduce str (map chr-s (b y))) "\n"))
         (list (str "  " (reduce str (map num-s (range +size+))) "\n"))))))
 
 (defn get-p
   "Given board `b', the value of the piece at (x,y)."
-  [b x y] (get (get b y) x))
+  [b x y] ((b y) x))
 
 (defn set-p
   "Given board `b', a new board after setting (x,y) => p."
-  [b x y p] (assoc b y (assoc (get b y) x p)))
+  [b x y p] (assoc b y (assoc (b y) x p)))
 
 (defmacro set-p*
   "Convenience macro to thread calls to set-p.
