@@ -165,7 +165,7 @@
              (not-in? '(2 4 3 3) moves)
              (not-in? '(2 4 1 3) moves))
 
-    (let [b2 (try-move b +black+ 2 4 3 5)]
+    (let [b2 (do-move b +black+ 2 4 3 5)]
       (assert* (= 0 (get-p b2 2 4))
                (= 1 (get-p b2 3 5)))))
 
