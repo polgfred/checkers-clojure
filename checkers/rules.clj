@@ -144,7 +144,8 @@
                   [nx ny (promote nx ny p)])))))
 
 (defn collect-jumps
-  "Given board `b' and side `s', the child nodes of the jump tree from (x,y) by piece `p'.
+  "Given board `b' and side `s', the child nodes of the jump tree from (x,y)
+  by piece `p'.
 
   This is a helper for `jumps-from', and is not meant to be invoked directly."
   [b s x y p]
@@ -205,7 +206,8 @@
                   [nx ny (promote nx ny p)])))))
 
 (defn collect-moves
-  "Given board `b' and side `s', the child nodes of the move tree from (x,y) by piece `p'.
+  "Given board `b' and side `s', the child nodes of the move tree from (x,y)
+  by piece `p'.
 
   This is a helper for `moves-from', and is not meant to be invoked directly."
   [b s x y p]
@@ -262,7 +264,8 @@
 
 (defn my-plays
   "Given board `b', the list of jump trees for side `s' if `s' can jump,
-  else the list of move trees for side `s' if `s' can move, else the empty list."
+  else the list of move trees for side `s' if `s' can move, else the empty
+  list."
   [b s]
   (let [jumps (my-jumps b s)]
     (if (seq jumps) jumps (my-moves b s))))
