@@ -38,17 +38,18 @@
   "Given board `b', a new board after setting (x,y) => p."
   [b x y p] (assoc b y (assoc (b y) x p)))
 
-(defmacro set-p*
-  "Convenience macro to thread calls to set-p.
+(defn set-ps
+  "Chains calls to set-p in order to set multiple piece values at once.
 
   For example:
-    (set-p* b [0 0 0] [1 1 0] [2 2 1])
-  expands to:
-    (set-p (set-p (set-p b 2 2 1) 1 1 0) 0 0 0)."
-  [b this & more]
-  (if more
-    `(set-p (set-p* ~b ~@more) ~@this)
-    `(set-p ~b ~@this)))
+    (set-ps b [0 0 0 1 1 0 2 2 1])
+  is equivalent to:
+    (set-p (set-p (set-p b 0 0 1) 1 1 0) 2 2 0)."
+  [b [x y p & more]]
+  (let [b (set-p b x y p)]
+    (if more
+      (recur b more)
+      b)))
 
 (defn my-piece?
   "Whether piece `p' is the piece (not king) of side `s'."
@@ -139,9 +140,7 @@
           my (avg y ny)]
       (if (and (opp? s (get-p b mx my))
                (open? (get-p b nx ny)))
-        (set-p* b [x y 0]
-                  [mx my 0]
-                  [nx ny (promote nx ny p)])))))
+        (set-ps b [x y 0 mx my 0 nx ny (promote nx ny p)])))))
 
 (defn collect-jumps
   "Given board `b' and side `s', the child nodes of the jump tree from (x,y)
@@ -202,8 +201,7 @@
            (=  1 (Math/abs (- ny y))))
     (let [p (get-p b x y)]
       (if (open? (get-p b nx ny))
-        (set-p* b [x y 0]
-                  [nx ny (promote nx ny p)])))))
+        (set-ps b [x y 0 nx ny (promote nx ny p)])))))
 
 (defn collect-moves
   "Given board `b' and side `s', the child nodes of the move tree from (x,y)
