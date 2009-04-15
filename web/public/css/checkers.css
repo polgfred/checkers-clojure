@@ -1,3 +1,5 @@
+/* board */
+
 #board-container {
   float: left;
 }
@@ -38,10 +40,6 @@
   vertical-align: middle;
 }
 
-#control {
-  margin-left: 360px;
-}
-
 /* DND */
 
 body.dojoDndMove #board td.on.dojoDndTarget {
@@ -64,4 +62,24 @@ body.dojoDndMove #board td.on.dojoDndTarget {
 
 .dojoDndAvatarCanDrop .dojoDndAvatarItem td {
   background-color: #080;
+}
+
+/* history */
+
+#move-history {
+  margin-left: 360px;
+  border-collapse: collapse;
+  border: 1px solid #aaa;
+}
+
+#move-history th {
+  border: 1px solid #aaa;
+}
+
+#move-history th, #move-history td {
+  width: 200px;
+  text-align: left;
+  font-size: 12px;
+  border-left: 1px solid #aaa;
+  border-right: 1px solid #aaa;
 }
