@@ -27,9 +27,14 @@
 
 (defn- in-unique-groups-of
   [n coll]
-  (remove (fn [& values]
-            (not= n (count (set values))))
+  (remove
+    (fn [& values]
+      (not= n (count (set values))))
     (in-groups-of n coll)))
+
+(defn- in?
+  [value coll]
+  (some #(= value %) coll))
 
 (fact "get-p returns the correct piece value"
   [x (random-coords)
@@ -41,16 +46,27 @@
   [x (random-coords)
    y (random-coords)
    p (random-pieces)]
-   (let [bb (set-p b x y p)]
-     (= p (get-p bb x y))))
+  (let [bb (set-p b x y p)]
+    (= p (get-p bb x y))))
 
 (fact "set-ps correctly sets multiple piece values"
   [[x1 x2 x3] (in-unique-groups-of 3 (random-coords))
    [y1 y2 y3] (in-unique-groups-of 3 (random-coords))
    [p1 p2 p3] (in-groups-of 3 (random-pieces))]
-   (let [bb (set-ps b [x1 y1 p1 x2 y2 p2 x3 y3 p3])]
-     (and (= p1 (get-p bb x1 y1))
-          (= p2 (get-p bb x2 y2))
-          (= p3 (get-p bb x3 y3)))))
+  (let [bb (set-ps b [x1 y1 p1 x2 y2 p2 x3 y3 p3])]
+    (and (= p1 (get-p bb x1 y1))
+         (= p2 (get-p bb x2 y2))
+         (= p3 (get-p bb x3 y3)))))
+
+(fact "squares returns valid squares with correct pieces"
+  [[x y p] (squares b)]
+  (and (= 0 (rem (+ x y) 2))
+       (= p (get-p b x y))))
+
+(fact "my-squares returns only my pieces"
+  [[x y p] (my-squares b +black+)]
+  (and (= 0 (rem (+ x y) 2))
+       (= p (get-p b x y))
+       (mine? +black+ p)))
 
 (print-color-results (verify-facts))
