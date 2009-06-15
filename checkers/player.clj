@@ -50,22 +50,24 @@
     (first (best-play b (- s) (dec v)))
     (calculate-score b)))
 
-(defn compare-plays-fn
+(def #^{
+  :doc
   "Given side `s', create a reducer that finds the best play from a list of plays.
 
   This function is memoized for performance."
-  [s]
-  (if (= s +black+)
-    (fn
-      ([] [-99999])
-      ([& plays]
-        (first (sort-by first > plays))))
-    (fn
-      ([] [+99999])
-      ([& plays]
-        (first (sort-by first < plays))))))
+  :arglists '([s])}
 
-(def compare-plays-fn (memoize compare-plays-fn))
+  compare-plays-fn
+  (letfn [(compare-plays-fn
+            [s]
+            (if (= s +black+)
+              (fn ([] [-99999])
+                  ([& plays]
+                    (first (sort-by first > plays))))
+              (fn ([] [+99999])
+                  ([& plays]
+                    (first (sort-by first < plays))))))]
+    (memoize compare-plays-fn)))
 
 (defn best-play-from
   "Given board `b', the best play for side `s' from (x,y).  If `more' is non-empty,
